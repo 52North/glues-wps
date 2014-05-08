@@ -2,7 +2,7 @@
 #
 # som.r
 #
-# purpose: use self-organuzing maps on syndromes 
+# purpose: use self-organuzing maps for land use classification
 #
 # author: sven.lautenbach@ufz.de, tomas.vaclavik@ufz.de
 #
@@ -200,21 +200,21 @@ require(maptools)
 # data;
 
 #wps.off;
-setwd(tempdir())
+#setwd(tempdir())
+# for manual execution:
+setwd("D:/Dokumente/2014_GLUES/WPS4R/System-Archetypes/")
 #wps.on;
 
 myLog("Working directory: ", getwd())
 
-# wps.in: id = dataPath, type = string,
-# title = the path to the data layers, minOccurs = 0, maxOccurs = 1,
-# value = D:/Dokumente/2014_GLUES/WPS4R/System-Archetypes/Input_Data_v2/;
-#wps.off;
-dataPath <- "D:/Dokumente/2014_GLUES/WPS4R/System-Archetypes/"
-#wps.on;
+# define the input file as a resource > will be copied to workdir by WPS
+# wps.resource: inputData_1000000_regular.Rdata;
 
 # -> theDF, dataframe with the sample points
 # wps.in: id = fileName, type = string,
-# title = the path to the data layers, minOccurs = 0, maxOccurs = 1,
+# title = the name of the input data file,
+# abstract = the name of the input data file that must be loaded as a resource,
+# minOccurs = 0, maxOccurs = 1,
 # value = inputData_1000000_regular.Rdata;
 #wps.off;
 fileName <- "inputData_1000000_regular.Rdata"
@@ -222,14 +222,21 @@ fileName <- "inputData_1000000_regular.Rdata"
 
 # TODO if the input file is not existing, then run the wps_preprocessing script?
 
-filePath <- paste0(dataPath, fileName)
-myLog("Loading file from path ", filePath, " (exists: ", file.exists(filePath), ")")
-load(file = filePath)
+if(file.exists(fileName)) {
+	load(file = fileName)
+}
+else {
+	myLog("File not found in workspace ", getwd(), " : ", fileName)
+	#filePath <- paste0(dataPath, fileName)
+	#myLog("Loading file from path ", filePath, " (exists: ", file.exists(filePath), ")")
+}
+
 myLog("Loaded file, workspace content: ", toString(ls()))
 
 # wps.in: id = dataVarName, type = string,
-# title = the path to the data layers, minOccurs = 0, maxOccurs = 1,
-# value = inputData_1000000_regular.Rdata;
+# title = the path to the data layers, abstract = "the R object name of the data 
+# variable in the preprocessing output, which is a saved R session",
+# minOccurs = 0, maxOccurs = 1, value = theDF;
 #wps.off;
 dataVarName <- "theDF"
 #wps.on;
@@ -287,22 +294,25 @@ save(data.norm, file = normalizedInputData)
 # abstract = an R data.frame with the input data with normalized variables, 
 # based on the cleaned input data;
 myLog("Saved output data in file ", normalizedInputData, " in directory ",
-			getwd(), " | file size: ",	file.info(normalizedInputData)$size / (1024*1024),
-			" MB")
+			getwd(), " | file size: ",
+			file.info(normalizedInputData)$size / (1024*1024), " MB")
 
 ################################################################################
 # SOM
 
 # wps.in: id = somGridTopology, type = string,
-# title = grid topology for som, minOccurs = 0, maxOccurs = 1,
-# value = hexagonal;
+# title = grid topology for som, abstract = the topology of the self-organizing 
+# map which can be either 'rectangular' or 'hexagonal', 
+# minOccurs = 0, maxOccurs = 1, value = hexagonal;
 #wps.off;
 somGridTopology <- "hexagonal"
 #wps.on;
 
 # wps.in: id = somGridDim, type = string,
 # title = "grid dimenstions for som in the format 'xdim,ydim'",
-# minOccurs = 0, maxOccurs = 1, value = 3,4;
+# abstract = "the grid dimensions for the self-organizing map in a comma 
+# separated format: 'xdim,ydim'",
+# minOccurs = 0, maxOccurs = 1, value = "3,4";
 #wps.off;
 somGridDim <- "4,4"
 #wps.on;
@@ -318,15 +328,20 @@ topologies <- list(list(xdim = xdim, ydim = ydim, topo = somGridTopology))
 myLog("Topologies: ", toString(topologies))
 
 outputFilePrefix <- "sysarch-som_"
-iterations <- 1 # 5
 
-# QUESTION: Why are we actually running this several times? The variable "run"
-# is only used in filenames, not in analysis...
+# wps.in: id = somIterations, type = integer,
+# title = the number of loops calculating the SOM,
+# abstract = "how often is the SOM analysis repeated?",
+# value = 1, minOccurs = 0, maxOccurs = 1;
+#wps.off;
+somIterations <- 1 # 5
+#wps.on;
+
 for(topology in topologies) {
 	myLog("Running som with topology: xdim = ", topology[[1]], ", ydim = ",
 				topology[[2]], ", topo = ", topo = topology[[3]])
-  for(run in 1:iterations) {
-  	myLog("Running ", run, "/", iterations, " for ", toString(topology))
+  for(run in 1:somIterations) {
+  	myLog("Running ", run, "/", somIterations, " for ", toString(topology))
   	
   	som.grid <- somgrid(xdim = topology[[1]], ydim = topology[[2]], 
   											topo = topology[[3]])
@@ -341,14 +356,20 @@ for(topology in topologies) {
   	myLog("SOM output created ", nunits, " classes.")
     
     # save code vectors to table
-  	fncsv <- paste0(outputFilePrefix, "codes_", paste0(collapse="_", topology), "_1000000reg", run, ".csv" )
-    write.table(syndromes.som$codes, file = fncsv, sep=";", row.names = FALSE)
-  	myLog("Saved code vectors file ", fncsv, " in ", getwd())
+  	codeVectorCSV <- paste0(outputFilePrefix, "codes_", paste0(collapse="_", topology),
+  									"_1000000reg_", run, ".csv" )
+    write.table(syndromes.som$codes, file = codeVectorCSV, sep=";", row.names = FALSE)
+  	myLog("Saved code vectors file ", codeVectorCSV, " in ", getwd())
+  	# NOTE: only the last created file will be returned from a WPS process
+  	# wps.out: codeVectorCSV, type = text/csv, title = code vectors,
+  	# abstract = an comma-seperated values table with the code vectors of the  
+  	# SOM classifications;
     
   	# create pdf
   	myLog("Creating plots...")
-  	fnpdf <- paste0("som_",  paste0(collapse="_", topology), "_1000000reg", run, ".pdf")
-    pdf(file = fnpdf)
+  	plotsDocument <- paste0(outputFilePrefix,  paste0(collapse="_", topology),
+  									"_1000000reg_", run, ".pdf")
+    pdf(file = plotsDocument)
   	
     boxplot(data.norm)
   	
@@ -389,21 +410,35 @@ for(topology in topologies) {
     			 bg = "white")
     
     dev.off()
-  	myLog("Saved plots to file ", fnpdf, " in ", getwd())
+  	myLog("Saved plots to file ", plotsDocument, " in ", getwd())
     
     # export shapefile
     coordinates(som.data) <-  ~x+y
-  	fnshp <- paste0("som_",  paste0(collapse = "_", topology), "_1000000reg", run)
-    writePointsShape(x = som.data, fn = paste0(fnshp, ".shp"), factor2char = TRUE, 
+  	outputDataSHP <- paste0(outputFilePrefix, paste0(collapse = "_", topology),
+  									"_1000000reg_", run)
+    writePointsShape(x = som.data, fn = paste0(outputDataSHP, ".shp"), factor2char = TRUE, 
     								 max_nchar=254)
-  	myLog("Saved shapefile ", fnshp, " in ", getwd())
-  	myLog("Shapefiles size for\t\t", list.files(pattern = fnshp),
-  				" is ",	file.info(list.files(pattern = fnshp))$size / (1024*1024),
+  	myLog("Saved shapefile ", outputDataSHP, " in ", getwd())
+  	myLog("Shapefiles size for\t\t", list.files(pattern = outputDataSHP),
+  				" is ",	file.info(list.files(pattern = outputDataSHP))$size / (1024*1024),
   				" MB")
   } # end run loop 
 } # end topologies loop 
 
-myLog("Done!")
+outputSomData <- paste0(outputFilePrefix, paste0(collapse = "_", topology), "_",
+										as.integer(dim(som.data)[[1]]), "_", run, ".Rdata")
 
-# TODO define outputs... do we actually want the user to access differnt som
-# configurations, or just one?
+# TODO define multiple outputs - right now only the final loop run is accessible
+myLog("Returning files ", outputDataSHP, " (shp), ",
+			codeVectorCSV, " (csv code vectors",
+			plotsDocument, " (plots) and ",
+			outputSomData, " (Rdata)")
+
+save(som.data, file = outputSomData)
+# wps.out: outputSomData, type = rdata, title = ouput datasets,
+# abstract = an R data.frame with the sample input data and the calculated 
+# classifications for each cell and distance to the code vector;
+myLog("Saved sampled data in file ", outputSomData, " in directory ", getwd(),
+			" | file size: ",	file.info(outputSomData)$size / (1024*1024), " MB")
+
+myLog("Done!")
