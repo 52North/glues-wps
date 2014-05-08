@@ -27,6 +27,7 @@ require(raster)
 
 # wps.in: id = dataPath, type = string,
 # title = the path to the data layers, minOccurs = 0, maxOccurs = 1,
+# abstract = the path to the data layers, must be a local server path,
 # value = D:/Dokumente/2014_GLUES/WPS4R/System-Archetypes/Input_Data_v2/;
 #wps.off;
 dataPath <- "D:/Dokumente/2014_GLUES/WPS4R/System-Archetypes/Input_Data_v2/"
@@ -55,9 +56,13 @@ files <- filesDN
 myLog("Files used: ", toString(files))
 
 # wps.in: id = sampleSize, type = integer, minOccurs = 0, maxOccurs = 1,
-# title = size of the sampling used in spsample, value = 1000000;
+# title = size of the sampling,
+# abstract = the number of sampling cells that are used in spsample,
+# value = 1000000;
 # wps.in: id = samplingType, type = string, minOccurs = 0, maxOccurs = 1,
-# title = sampling strategy of the sampling used in spsample,
+# title = sampling strategy,
+# abstract = strategy of the sampling used in spsample (e.g. random, regular, 
+# stratified, nonaligned, hexagonal, clusted or Fibonacci),
 # value = regular;
 #wps.off;
 sampleSize <- 1*10^6
