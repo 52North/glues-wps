@@ -224,8 +224,7 @@ fileName <- "inputData_1000000_regular.Rdata"
 
 if(file.exists(fileName)) {
 	load(file = fileName)
-}
-else {
+} else {
 	myLog("File not found in workspace ", getwd(), " : ", fileName)
 	#filePath <- paste0(dataPath, fileName)
 	#myLog("Loading file from path ", filePath, " (exists: ", file.exists(filePath), ")")
@@ -347,7 +346,9 @@ for(topology in topologies) {
   											topo = topology[[3]])
   	myLog("Grid summary: ", toString(capture.output(summary(som.grid))))
   	
-  	myLog("Starting som algorithm...")
+  	myLog("Starting som algorithm... current memory state: \n\tmemory.size = ",
+  				memory.size(), " (max: ", memory.size(TRUE), "); memory.limit = ",
+  				memory.limit())
     syndromes.som <- som(data= as.matrix(data.norm), grid = som.grid)
   	myLog("Calculated som: ", toString(capture.output(summary(syndromes.som))))
     #som.hc <- cutree(hclust(dist(syndromes.som$codes)), ncl)

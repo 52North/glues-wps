@@ -17,7 +17,12 @@ myLog <- function(...) {
 myLog("Start script PREPROCESSING ... ")
 
 ################################################################################
+# for testing
+#wps.off;
+setwd("D:/Dokumente/2014_GLUES/WPS4R/System-Archetypes/")
+#wps.on;
 
+################################################################################
 require(sp)
 require(raster)
 
@@ -32,30 +37,44 @@ require(raster)
 # abstract = "the path to the data layers, must be a local server path",
 # value = Input_Data_v2;
 #wps.off;
-dataPath <- "D:/Dokumente/2014_GLUES/WPS4R/System-Archetypes/Input_Data_v2/"
+dataPath <- "Input_Data_v2"
 #wps.on;
-
-# read the file with the input data
-#files <- read.table(file = paste0(dataPath, "files_v6.txt"), as.is = TRUE)
-#files <- files$V1
-
-files6 <- c("crop2005", "cropdif50", "grass2005", "grassdif50", "nfert", 
-"irrigation", "totsederosion", "y_wheat", "y_maize", "y_rice", "yg_wheat",
-"yg_maize", "yg_rice", "tpi_agr", "fpi_pcapita", "hanpp", "bio1", "bio2",
-"bio12", "bio15", "bio21", "temp_anom", "ndvi_mean", "ndvi_sd", "soil_orgc", 
-"soil_ph", "spec_rich", "gdp", "agr_gdp", "gcs_agr", "pop_glds00ag", "popdif50",
-"polstability", "accessibility")
 
 # the order of the files matters, since the conversion to SpatialPixelsDataFrame
 # to do the sampling does not work for all raster layers...
-filesDN <- c("agr_gdp", "crop2005", "cropdif50", "grass2005", "grassdif50", "nfert", 
-						"irrigation", "totsederosion", "y_wheat", "y_maize", "y_rice", "yg_wheat",
-						"yg_maize", "yg_rice", "tpi_agr", "fpi_pcapita", "hanpp", "bio1", "bio2",
-						"bio12", "bio15", "bio21", "temp_anom", "ndvi_mean", "ndvi_sd", "soil_orgc", 
-						"soil_ph", "spec_rich", "gdp", "gcs_agr", "pop_glds00ag", "popdif50",
-						"polstability", "accessibility")
-files <- filesDN
-myLog("Files used: ", toString(files))
+files <- c("crop2005",
+					 "cropdif50",
+					 "grass2005",
+					 "grassdif50",
+					 "nfert",
+					 "irrigation",
+					 "totsederosion",
+					 "y_wheat",
+					 "y_maize",
+					 "y_rice",
+					 "yg_wheat",
+					 "yg_maize",
+					 "yg_rice",
+					 "tpi_agr",
+					 "hanpp",
+					 "bio1",
+					 "bio2",
+					 "bio12",
+					 "bio15",
+					 "bio21",
+					 "temp_anom",
+					 "ndvi_mean",
+					 "ndvi_sd",
+					 "soil_orgc",
+					 "spec_rich",
+					 "gdp",
+					 "agr_gdp",
+					 "gcs_agr",
+					 "pop_glds00ag",
+					 "popdif50",
+					 "polstability",
+					 "accessibility") 
+myLog("Input datasets: ", toString(files))
 
 # wps.in: id = sampleSize, type = integer, minOccurs = 0, maxOccurs = 1,
 # title = size of the sampling,
@@ -67,7 +86,7 @@ myLog("Files used: ", toString(files))
 # stratified, nonaligned, hexagonal, clusted or Fibonacci)",
 # value = regular;
 #wps.off;
-sampleSize <- 1*10^6
+sampleSize <- 100 #1*10^6
 samplingType <- "regular"
 #wps.on;
 
@@ -92,6 +111,7 @@ rasterList <- list()
 
 for (currentFile in files) {
   fileName <- paste0(dataPath, "/", currentFile)
+  # testing: fileName <- paste0(dataPath, "/", "crop2005")
   myLog("Processing ", fileName)
   
   raster <- raster(fileName)
