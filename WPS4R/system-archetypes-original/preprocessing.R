@@ -112,7 +112,7 @@ rasterList <- list()
 for (currentFile in files) {
   fileName <- paste0(dataPath, "/", currentFile)
   # testing: fileName <- paste0(dataPath, "/", "crop2005")
-  myLog("Processing ", fileName)
+  myLog("Processing ", fileName, " - file exists: ", file.exists(fileName))
   
   raster <- raster(fileName)
   myLog("Current raster: ", toString(capture.output(summary(raster))))
