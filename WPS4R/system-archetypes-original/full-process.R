@@ -274,7 +274,7 @@ myLog("Input datasets: ", toString(files))
 # stratified, nonaligned, hexagonal, clusted or Fibonacci)",
 # value = regular;
 #wps.off;
-sampleSize <- 100 #1*10^6
+sampleSize <- 1*10^6 # 100
 samplingType <- "regular"
 #wps.on;
 
@@ -546,20 +546,21 @@ for(topology in topologies) {
         # map the clusters back to the feature space
         # QUESTION: Why are we not using the normalized data for the reverse mapping?
         .som.fs <- data.clean
-        .som.fs$som.unit <- som.result$unit.classif
+        .som.fs$som.unit <- som.result$unit.classif # save the classified values
         # map the distances to corresponding SOM codebook vector
         .som.fs$som.distance <- som.result$distances
         .sampleSize <- as.integer(dim(.som.fs)[[1]])
         .sampleRunString <- paste0("_sample-", .sampleSize, "_run-", run)
         
+        # create code vectors table
         # wps.out: output.codeVector, type = text/csv, title = code vectors,
         # abstract = an comma-seperated values table with the code vectors of the  
         # SOM classifications;
-        # save code vectors to table
         output.codeVector <- paste0(outputFilePrefix, "codes_", .topoString, .sampleRunString, ".csv" )
         write.table(som.result$codes, file = output.codeVector, sep=";", row.names = FALSE)
       	myLog("Saved code vectors file ", output.codeVector, " in ", getwd())
         
+        # create output data.frame
         # wps.out: output.data, type = rdata, title = output datasets,
         # abstract = an R data.frame with the sample input data and the calculated 
         # classifications for each cell and distance to the code vector;
