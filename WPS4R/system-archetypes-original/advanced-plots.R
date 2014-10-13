@@ -183,6 +183,12 @@ lsaBarplot(somunits$SOM9, name = "9", names = paste(somunits$variables), col = r
 lsaBarplot(somunits$SOM10, name = "10", col = rgb(227,26,28, 255, 255, maxColorValue=255))
 lsaBarplot(somunits$SOM11, name = "11", col = rgb(55,126,184, 255, maxColorValue=255))
 lsaBarplot(somunits$SOM12, name = "12", col = rgb(255,255,153, 255, maxColorValue=255))
+
+# FIXME add more plots
+lsaBarplot(somunits$SOM13, name = "13", col = rgb(255,255,153, 255, maxColorValue=255))
+lsaBarplot(somunits$SOM14, name = "14", col = rgb(255,255,153, 255, maxColorValue=255))
+lsaBarplot(somunits$SOM15, name = "15", col = rgb(255,255,153, 255, maxColorValue=255))
+lsaBarplot(somunits$SOM16, name = "16", col = rgb(255,255,153, 255, maxColorValue=255))
 dev.off()
 
 
