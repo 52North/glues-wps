@@ -382,7 +382,6 @@ myLog("Saved cleaned data in file ", cleanedDataFile, " in directory ", getwd(),
 			" | file size: ",	file.info(cleanedDataFile)$size / (1024*1024)," MB")
 
 
-################################################################################
 # normalise the input data (not the coordinates which will not be used in the cluster analysis)
 
 # wps.in: id = standardizationMethod, type = string,
@@ -419,7 +418,7 @@ myLog("Saved summary statistics of normalized data in file ",
 output.normalizedInputData <- paste0("data_normalized.Rdata")
 save(data.norm, file = output.normalizedInputData)
 # wps.out: output.normalizedInputData, type = rdata, title = normalized input datasets,
-# abstract = an R data.frame with the input data with normalized variables, 
+# abstract = an R data.frame with the input data with normalized variables which are 
 # based on the cleaned input data;
 myLog("Saved normalized data in file ", output.normalizedInputData, " in directory ",
 			getwd(), " | file size: ",
@@ -445,10 +444,10 @@ somGridTopology <- "hexagonal"
 # wps.in: id = somGridDim, type = string,
 # title = "grid dimenstions for som in the format 'xdim,ydim'",
 # abstract = "the grid dimensions for the self-organizing map in a comma 
-# separated format: 'xdim,ydim'",
+# separated format: 'xdim,ydim' This detemines the number of classes in the SOM!",
 # minOccurs = 0, maxOccurs = 1, value = "3,4";
 #wps.off;
-somGridDim <- "4,4"
+somGridDim <- "3,4"
 #wps.on;
 
 xdim <- unlist(strsplit(x = somGridDim, split = ","))[[1]]
@@ -545,19 +544,20 @@ for(topology in topologies) {
         
         # map the clusters back to the feature space
         # QUESTION: Why are we not using the normalized data for the reverse mapping?
-        .som.fs <- data.clean
-        .som.fs$som.unit <- som.result$unit.classif # save the classified values
+        systemArchetypesData <- data.clean
+        systemArchetypesData$som.unit <- som.result$unit.classif # save the classified values
         # map the distances to corresponding SOM codebook vector
-        .som.fs$som.distance <- som.result$distances
-        .sampleSize <- as.integer(dim(.som.fs)[[1]])
+        systemArchetypesData$som.distance <- som.result$distances
+        .sampleSize <- as.integer(dim(systemArchetypesData)[[1]])
         .sampleRunString <- paste0("_sample-", .sampleSize, "_run-", run)
         
         # create code vectors table
         # wps.out: output.codeVector, type = text/csv, title = code vectors,
         # abstract = an comma-seperated values table with the code vectors of the  
         # SOM classifications;
+        codeVectors <- som.result$codes
         output.codeVector <- paste0(outputFilePrefix, "codes_", .topoString, .sampleRunString, ".csv" )
-        write.table(som.result$codes, file = output.codeVector, sep=";", row.names = FALSE)
+        write.table(codeVectors, file = output.codeVector, sep=";", row.names = FALSE)
       	myLog("Saved code vectors file ", output.codeVector, " in ", getwd())
         
         # create output data.frame
@@ -565,25 +565,23 @@ for(topology in topologies) {
         # abstract = an R data.frame with the sample input data and the calculated 
         # classifications for each cell and distance to the code vector;
         output.data <- paste0(outputFilePrefix, .topoString, .sampleRunString, ".Rdata")
-        systemArchetypesData <- .som.fs # rename variable so that it is listed in the downloadable workspace
-        save(systemArchetypesData, file = output.data)
+        save(systemArchetypesData, codeVectors, file = output.data)
         myLog("Saved sampled data (feature space) in file ", output.data, " in directory ", getwd(),
               " | file size: ",    file.info(output.data)$size / (1024*1024), " MB")
-        rm(systemArchetypesData)
         
       	# create pdf
         # wps.out: output.plots, type = pdf, title = ouput datasets,
         # abstract = an R data.frame with the sample input data and the calculated 
         # classifications for each cell and distance to the code vector;
         output.plots <- paste0(outputFilePrefix, .topoString, .sampleRunString, ".pdf")
-        createPDF(output.plots, data, som.result, .som.fs)
+        createPDF(output.plots, data, som.result, systemArchetypesData)
         
         # create shapefile
         # wps.out: output.shapefile, type = shp, title = ouput datasets,
         # abstract = an R data.frame with the sample input data and the calculated 
         # classifications for each cell and distance to the code vector;
         output.shapefile <- paste0(outputFilePrefix, .topoString, .sampleRunString)
-        createShapefile(.som.fs, output.shapefile)
+        createShapefile(systemArchetypesData, output.shapefile)
     } # end run loop 
 } # end topologies loop
 
@@ -593,5 +591,11 @@ myLog("Output files:\n\t\t", output.shapefile, " (shp)\n\t\t",
       output.codeVector, " (csv code vectors)\n\t\t",
       output.plots, " (plots)\n\t\t",
       output.data, " (Rdata)")
+
+# wps.import: advanced-plots.R
+
+mapData <- prepareData(systemArchetypesData)
+saveMaps(mapData)
+savePlots(codeVectors, systemArchetypesData)
 
 myLog("#### Done with som (3/3)")

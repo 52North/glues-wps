@@ -220,7 +220,8 @@ savePlots <- function(vectors, data, lsaBarplotFilename = "lsa-barplot.png", wid
     
     png(filename = lsaBarplotFilename, width = width, height = height)
     
-    numberOfFigures <- 16
+    # TODO this code is not completely flexible with respect to the number of classes/figures
+    numberOfFigures <- dim(codeVectors)[[1]]
     layout(matrix(c(1:numberOfFigures), 4, 4, byrow = TRUE), widths = c(1.8,1,1))
     layout.show(numberOfFigures)
     par(las=2) # make label text perpendicular to axis
