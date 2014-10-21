@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<wps:Execute xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="WPS" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0    http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd">
+	<ows:Identifier>org.n52.wps.server.r.glues.systemarchetypes</ows:Identifier>
+	<wps:DataInputs>
+		<wps:Input>
+			<ows:Identifier>dataPath</ows:Identifier>
+			<wps:Data>
+				<wps:LiteralData>Input_Data_v2</wps:LiteralData>
+			</wps:Data>
+		</wps:Input>
+		<wps:Input>
+			<ows:Identifier>sampleSize</ows:Identifier>
+			<wps:Data>
+				<wps:LiteralData>1000000</wps:LiteralData>
+			</wps:Data>
+		</wps:Input>
+		<wps:Input>
+			<ows:Identifier>samplingType</ows:Identifier>
+			<wps:Data>
+				<wps:LiteralData>regular</wps:LiteralData>
+			</wps:Data>
+		</wps:Input>
+		<wps:Input>
+			<ows:Identifier>standardizationMethod</ows:Identifier>
+			<wps:Data>
+				<wps:LiteralData>standardize</wps:LiteralData>
+			</wps:Data>
+		</wps:Input>
+		<wps:Input>
+			<ows:Identifier>somGridTopology</ows:Identifier>
+			<wps:Data>
+				<wps:LiteralData>hexagonal</wps:LiteralData>
+			</wps:Data>
+		</wps:Input>
+		<wps:Input>
+			<ows:Identifier>somGridDim</ows:Identifier>
+			<wps:Data>
+				<wps:LiteralData>3,4</wps:LiteralData>
+			</wps:Data>
+		</wps:Input>
+		<wps:Input>
+			<ows:Identifier>somIterations</ows:Identifier>
+			<wps:Data>
+				<wps:LiteralData>1</wps:LiteralData>
+			</wps:Data>
+		</wps:Input>
+	</wps:DataInputs>
+	<wps:ResponseForm>
+		<wps:ResponseDocument storeExecuteResponse="true" lineage="false" status="true">
+			<wps:Output asReference="false" mimeType="text/plain" encoding="UTF-8">
+				<ows:Identifier>sampleBaseDataStatistics</ows:Identifier>
+			</wps:Output>
+			<wps:Output asReference="false" mimeType="text/csv" encoding="base64">
+				<ows:Identifier>output.codeVector</ows:Identifier>
+			</wps:Output>
+			<wps:Output asReference="false" mimeType="application/pdf">
+				<ows:Identifier>output.plots</ows:Identifier>
+			</wps:Output>
+			<wps:Output asReference="true" mimeType="image/png">
+				<ows:Identifier>output.map</ows:Identifier>
+			</wps:Output>
+			<wps:Output asReference="true" mimeType="image/png">
+				<ows:Identifier>output.distancemap</ows:Identifier>
+			</wps:Output>
+			<wps:Output asReference="true" mimeType="image/png">
+				<ows:Identifier>output.statistics.plot</ows:Identifier>
+			</wps:Output>
+			<wps:Output asReference="false" mimeType="text/plain" encoding="UTF-8">
+				<ows:Identifier>sessionInfo</ows:Identifier>
+			</wps:Output>
+			<wps:Output asReference="false" mimeType="text/plain" encoding="UTF-8">
+				<ows:Identifier>warnings</ows:Identifier>
+			</wps:Output>
+		</wps:ResponseDocument>
+	</wps:ResponseForm>
+</wps:Execute>
