@@ -195,9 +195,9 @@ require(vegan)
 require(sp)
 require(maptools)
 
-# wps.des: id = glues.systemarchetypes.som, title = som analysis for 
-# system archetypes, abstract = self-organizing map based on preprocessed input 
-# data;
+## wps.des: id = glues.systemarchetypes.som, title = som analysis for 
+## system archetypes, abstract = self-organizing map based on preprocessed input 
+## data;
 
 #wps.off;
 #setwd(tempdir())

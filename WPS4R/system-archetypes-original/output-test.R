@@ -12,9 +12,9 @@
 ################################################################################
 
 ################################################################################
-# WPS4R metadata and resources
-# wps.des: id = glues.systemarchetypes.output-test, title = Create output files
-# abstract = create all som output files based on an existing analysis run;
+## WPS4R metadata and resources
+## wps.des: id = glues.systemarchetypes.output-test, title = Create output files
+## abstract = create all som output files based on an existing analysis run;
 
 ################################################################################
 # required packages
