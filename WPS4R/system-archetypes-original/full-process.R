@@ -576,12 +576,12 @@ for(topology in topologies) {
         output.plots <- paste0(outputFilePrefix, .topoString, .sampleRunString, ".pdf")
         createPDF(output.plots, data, som.result, systemArchetypesData)
         
-        # create shapefile
-        # wps.out: output.shapefile, type = shp, title = ouput datasets,
-        # abstract = an R data.frame with the sample input data and the calculated 
-        # classifications for each cell and distance to the code vector;
-        output.shapefile <- paste0(outputFilePrefix, .topoString, .sampleRunString)
-        createShapefile(systemArchetypesData, output.shapefile)
+        ## create shapefile
+        ## wps.out: output.shapefile, type = shp, title = ouput datasets,
+        ## abstract = an R data.frame with the sample input data and the calculated 
+        ## classifications for each cell and distance to the code vector;
+        #output.shapefile <- paste0(outputFilePrefix, .topoString, .sampleRunString)
+        #createShapefile(systemArchetypesData, output.shapefile)
     } # end run loop 
 } # end topologies loop
 
