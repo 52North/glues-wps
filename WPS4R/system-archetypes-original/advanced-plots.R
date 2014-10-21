@@ -11,18 +11,30 @@ setwd("C:/Users//Daniel/Documents/2014_GLUES/WPS4R/System-Archetypes/")
 load(file = "C:/Users/Daniel/Documents/2014_GLUES/WPS4R/System-Archetypes/sysarch-som_4_4_hexagonal_sample-976997_run-1.Rdata")
 #.som.fs <- systemArchetypesData
 
-# run functions
-mapData <- prepareData(systemArchetypesData)
-saveMaps(mapData)
-savePlots(codeVectors, systemArchetypesData)
+
+# TESTING: run functions
+#mapData <- prepareData(systemArchetypesData)
+#saveMaps(mapData)
+#savePlots(codeVectors, systemArchetypesData)
+#
 
 myLog <- function(...) {
     cat(paste0("[glues.systemarchetypes] ", Sys.time(), " | ", ..., "\n"))
 }
 # wps.on;
 
+###############################################################################
+# UTILITY FUNCTIONS
+createPaletteAndLabels <- function(numberOfCategories) {
+    palette <- rainbow(numberOfCategories) # sample(rainbow(numberOfCategories), size = numberOfCategories)
+    labels <- paste("LSA", c(1:numberOfCategories))
+    df <- data.frame(id = c(1:numberOfCategories), color = palette, name = labels)
+    
+    myLog("Created palette and labels: ", paste(capture.output(df), sep = "\n", collapse = "\n"))
+    return(df)
+}
 
-prepareData <- function(data) {
+preparePlotData <- function(data) {
     require(sp)
     
     plotData <- data
@@ -33,7 +45,13 @@ prepareData <- function(data) {
     return(plotData)
 }
 
-saveMaps <- function(plotData, lsaMapName = "lsa-map-figure-1.png", distanceMapName = "som-distance-map-figure-A2.png",
+###############################################################################
+# PLOT FUNCTIONS
+
+# for testing: plotData <- prepareData(systemArchetypesData)
+saveMaps <- function(plotData, paletteAndLabels = createPaletteAndLabels(16), 
+                     lsaMapName = "lsa-map-figure-1.png",
+                     distanceMapName = "som-distance-map-figure-A2.png",
                      width = 1280, height = 720) {
     require(raster)
     require(rasterVis)
@@ -57,51 +75,57 @@ saveMaps <- function(plotData, lsaMapName = "lsa-map-figure-1.png", distanceMapN
     rast <- raster()
     extent(rast) <- extent(plotData)
     aspectRatio <- (extent(plotData)@xmax - extent(plotData)@xmin) / (extent(plotData)@ymax - extent(plotData)@ymin)
-    nrow(rast) <- 1000
+    # raster size must depend on number of samples
+    nrow(rast) <- min(1000, round(sqrt(dim(plotData)[[1]])))
     ncol(rast) <- round(nrow(rast) * aspectRatio)
     # see what happens by couting the number of points in each cell
     #plotDataRaster <- rasterize(plotData, rast, fun = "count", field = "som.unit")
+    myLog("Setting raster dimesions to ", nrow(rast), " rows and ", ncol(rast),
+        " columns based on data dimenstions: ", toString(dim(plotData)[[1]]))
     
     myLog("Start rasterize...")
     plotDataRaster <- rasterize(plotData, rast, fun = mean, field = "som.unit", na.rm = TRUE)
     plotDataRaster <- ratify(plotDataRaster, count = TRUE) # change to categorical raster
     rat <- levels(plotDataRaster)[[1]]
-    rat$class <- paste("LSA", c(1:numberOfCategories)) # rename categories
-    levels(plotDataRaster) <- rat
-    
-    #nrow(plotDataRaster) * ncol(plotDataRaster)
-    #sort(unique(plotData[["som.unit"]]))
     numberOfCategories <- dim(rat)[[1]]
-    myLog("Done. Found ", numberOfCategories, " categories")
-    myLog("Levels:\n", paste(capture.output(levels(plotDataRaster)), sep = "\n", collapse = "\n"))
+    myLog("Done with rasterize, found ", numberOfCategories, " categories, ", dim(codeVectors)[[1]], " were in the data.")
+
+    rat$class <- paletteAndLabels["name"][c(1:numberOfCategories), ] #paste("LSA", c(1:numberOfCategories)) # rename categories
+    levels(plotDataRaster) <- rat
+    myLog("Levels/classnames:\n", paste(capture.output(levels(plotDataRaster)), sep = "\n", collapse = "\n"))
     
     # Figure 1
     myLog("Saving Figure 1...")
     png(filename = lsaMapName, width = width, height = height)
     lsaMap <- levelplot(plotDataRaster, main = "Global land use archetypes",
-                        col.regions = sample(rainbow(numberOfCategories), size = numberOfCategories),
+                        col.regions = paletteAndLabels["color"][c(1:numberOfCategories), ], #palette,
                     att = "class", sp.layout = list("sp.polygons", countriesLow, col = "gray50", first = FALSE))
     #histogram(plotDataRaster)
     print(lsaMap)
     dev.off()
+    myLog("Done with Figure 1.")
     
     # Figure A2 - plot using som.result$distance
     myLog("Saving Figure A2...")
     png(filename = distanceMapName, width = width, height = height)
     myLog("Distance statistics:\n", paste(capture.output(summary(plotData$som.distance)), sep = "\n", collapse = "\n"))
     plotDistanceRaster <- rasterize(plotData, rast, fun = mean, field = "som.distance", na.rm = TRUE)
-    distanceMap <- levelplot(plotDistanceRaster, col.regions = rev(bpy.colors()), zscaleLog = TRUE,
+    distanceMap <- levelplot(plotDistanceRaster,
+                             col.regions = rev(bpy.colors()),
+                             zscaleLog = TRUE,
                              main = "Distance to cluster (log scale)",
         sub = "Quality assessment of the classification procedure. The map displays the distance of each grid cell,
        \n mapped to a particular cluster, to the codebook vector of that cluster. Low values indicate good quality of mapping.")
     print(distanceMap)
     dev.off()
+    myLog("Done with Figure A2.")
     
     myLog("Done with map plots, saved to ", lsaMapName, " and ", distanceMapName)
 }
 
-
-savePlots <- function(vectors, data, lsaBarplotFilename = "lsa-barplot.png", width = 720, height = 1280) {
+# for testing: vectors <- codeVectors; data <- systemArchetypesData
+savePlots <- function(vectors, data, paletteAndLabels = createPlotPalette(16),
+                      lsaBarplotFilename = "lsa-barplot.png", width = 720, height = 1280) {
     ###############################################################################
     # Calculate statistics (to plot Fig. 3 and A1)
     # - codebook vector (normalized variable values that best characterize each 
@@ -193,7 +217,6 @@ savePlots <- function(vectors, data, lsaBarplotFilename = "lsa-barplot.png", wid
                                   order = unlist(datasetsToOrder)),
                        by = "row.names")
     myLog("Somunits summary: ", paste(capture.output(summary(somunits)), sep = "\n", collapse = "\n"))
-    #somunits$variables # the names for the plot
     
     require(plyr)
     somunits <- arrange(somunits, order, decreasing = TRUE)
@@ -209,7 +232,7 @@ savePlots <- function(vectors, data, lsaBarplotFilename = "lsa-barplot.png", wid
         theSpaces <- c(rep(.4, 7), 2, rep(.4, 9), 2, rep(.4, 14))
         
         par(mar = c(3, leftmar, 1, 1))
-        barplot(data, main = paste("LSA ", name), xlim = autolim(data),
+        barplot(data, main = name, xlim = autolim(data),
                 horiz = TRUE,
                 names.arg = names,
                 cex.names=0.9,
@@ -221,30 +244,28 @@ savePlots <- function(vectors, data, lsaBarplotFilename = "lsa-barplot.png", wid
     png(filename = lsaBarplotFilename, width = width, height = height)
     
     # TODO this code is not completely flexible with respect to the number of classes/figures
-    numberOfFigures <- dim(codeVectors)[[1]]
-    layout(matrix(c(1:numberOfFigures), 4, 4, byrow = TRUE), widths = c(1.8,1,1))
-    layout.show(numberOfFigures)
+    
+    numberOfFigures <- dim(vectors)[[1]]
+    layout(matrix(data = c(1:16), nrow = 4, ncol = 4, byrow = TRUE), widths = c(1.8,1,1))
+    layout.show(16) #numberOfFigures)
     par(las=2) # make label text perpendicular to axis
     
-    lsaBarplot(somunits$SOM1, name = "1", col = rgb(51,160,44, 255, maxColorValue=255), names = paste(somunits$variables), leftmar = 9)
-    lsaBarplot(somunits$SOM2, name = "2", col = rgb(178,178,178, 255, maxColorValue=255))
-    lsaBarplot(somunits$SOM3, name = "3", col = rgb(152,78,163, 255, maxColorValue=255))
-    lsaBarplot(somunits$SOM4, name = "4", col = rgb(251,154,153, 255, maxColorValue=255))
-    
-    lsaBarplot(somunits$SOM5, name = "5", col = rgb(30,30,30, 255, maxColorValue=255), names = paste(somunits$variables), leftmar = 9)
-    lsaBarplot(somunits$SOM6, name = "6", col = rgb(255,127,0, 255, maxColorValue=255))
-    lsaBarplot(somunits$SOM7, name = "7", col = rgb(166,86,40, 255, maxColorValue=255))
-    lsaBarplot(somunits$SOM8, name = "8", col = rgb(253,191,111, 255, maxColorValue=255))
-    
-    lsaBarplot(somunits$SOM9, name = "9", col = rgb(178,223,138, 255, maxColorValue=255), names = paste(somunits$variables), leftmar = 9)
-    lsaBarplot(somunits$SOM10, name = "10", col = rgb(227,26,28, 255, maxColorValue=255))
-    lsaBarplot(somunits$SOM11, name = "11", col = rgb(55,126,184, 255, maxColorValue=255))
-    lsaBarplot(somunits$SOM12, name = "12", col = rgb(255,255,153, 255, maxColorValue=255))
-    
-    lsaBarplot(somunits$SOM13, name = "13", col = rgb(255,155,253, 255, maxColorValue=255), names = paste(somunits$variables), leftmar = 9)
-    lsaBarplot(somunits$SOM14, name = "14", col = rgb(205,255,53, 255, maxColorValue=255))
-    lsaBarplot(somunits$SOM15, name = "15", col = rgb(255,205,153, 255, maxColorValue=255))
-    lsaBarplot(somunits$SOM16, name = "16", col = rgb(155,255,100, 255, maxColorValue=255))
+    myLog("Plotting ", numberOfFigures, " (of max 16) barplots...")
+    for(i in c(1:16)) {
+        if(i > numberOfFigures) {
+            # fill up to 16 plots
+            plot.new()
+            next;
+        }
+        col <- paletteAndLabels[["color"]][i]
+        nam <- paletteAndLabels[["name"]][i]
+        if((i %% 4) == 1) { # add names for every forth plot
+            lsaBarplot(somunits$SOM1, name = nam, col = col, names = paste(somunits$variables), leftmar = 9)
+        }
+        else {
+            lsaBarplot(somunits$SOM2, name = nam, col = col)
+        }
+    }
     
     par(def.par)  #- reset to default
     dev.off()

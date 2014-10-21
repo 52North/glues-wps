@@ -591,11 +591,37 @@ myLog("Output files:\n\t\t", output.shapefile, " (shp)\n\t\t",
       output.codeVector, " (csv code vectors)\n\t\t",
       output.plots, " (plots)\n\t\t",
       output.data, " (Rdata)")
+myLog("#### Done with som (3/4)")
 
-# wps.import: advanced-plots.R
+################################################################################
+# 4) Advanced plots
+################################################################################
+# wps.import: advanced-plots.R;
 
-mapData <- prepareData(systemArchetypesData)
-saveMaps(mapData)
-savePlots(codeVectors, systemArchetypesData)
+# map process output
+# wps.out: output.map, type = png, title = map of LSAs,
+# abstract = a global thematic map displaying the land use system archetypes;
+output.map = "lsa-map.png"
 
-myLog("#### Done with som (3/3)")
+# distance/quality map output
+# wps.out: output.distancemap, type = png, title = som distance map,
+# abstract = a global map displaying the distance of each raster cell to the code
+# vector on a logarithmic scale to estimate representativeness;
+output.distancemap = "lsa-som-distancemap.png"
+
+# create statistics plot
+# wps.out: output.statistics.plot, type = png, title = system archetypes
+# statistics,
+# abstract = barplots of the codebook vectors displaying the combination of
+# normalized variable values that best characterize each land system archetype;
+output.statistics.plot = "lsa-codebook-barplots.png"
+
+pal <- createPaletteAndLabels(dim(codeVectors)[[1]])
+mapData <- preparePlotData(systemArchetypesData)
+saveMaps(plotData = mapData, paletteAndLabels = pal, lsaMapName = output.map,
+         distanceMapName = output.distancemap)
+savePlots(vectors = codeVectors, data = systemArchetypesData, paletteAndLabels = pal,
+          lsaBarplotFilename = output.statistics.plot)
+
+
+myLog("#### Done with plots (4/4)")
