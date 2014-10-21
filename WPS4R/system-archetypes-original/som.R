@@ -195,9 +195,9 @@ require(vegan)
 require(sp)
 require(maptools)
 
-# wps.des: id = glues.systemarchetypes.som, title = som analysis for 
-# system archetypes, abstract = self-organizing map based on preprocessed input 
-# data;
+## wps.des: id = glues.systemarchetypes.som, title = som analysis for 
+## system archetypes, abstract = self-organizing map based on preprocessed input 
+## data;
 
 #wps.off;
 #setwd(tempdir())
@@ -253,9 +253,9 @@ myLog("Cleaned data size (used complete.cases to remove NAs): ",
 somData <- paste0("som_data.Rdata")
 save(data.clean, file = somData)
 # wps.out: somData, type = rdata, title = output datasets,
-# abstract = an R data.frame with (i) the input data (all NA values removed), 
+# abstract = "an R data.frame with (i) the input data (all NA values removed), 
 # (ii) the classification based on an SOM algorithm, and (iii) the code vectors 
-# mapped back to feature space;
+# mapped back to feature space";
 myLog("Saved output data in file ", somData, " in directory ", getwd(),
 			" | file size: ",	file.info(somData)$size / (1024*1024)," MB")
 
@@ -290,8 +290,8 @@ myLog("Variables (sorted): ", toString(names(data.norm)))
 normalizedInputData <- paste0("som_data_normalized.Rdata")
 save(data.norm, file = normalizedInputData)
 # wps.out: normalizedInputData, type = rdata, title = normalized input datasets,
-# abstract = an R data.frame with the input data with normalized variables, 
-# based on the cleaned input data;
+# abstract = "an R data.frame with the input data with normalized variables, 
+# based on the cleaned input data";
 myLog("Saved output data in file ", normalizedInputData, " in directory ",
 			getwd(), " | file size: ",
 			file.info(normalizedInputData)$size / (1024*1024), " MB")

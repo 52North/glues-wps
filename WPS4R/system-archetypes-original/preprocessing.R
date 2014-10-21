@@ -26,9 +26,9 @@ setwd("D:/Dokumente/2014_GLUES/WPS4R/System-Archetypes/")
 require(sp)
 require(raster)
 
-# wps.des: id = glues.systemarchetypes.preprocessing, title = preprocessing for 
-# system archetypes, abstract = process loads input files and saves them in 
-# one data frame;
+## wps.des: id = glues.systemarchetypes.preprocessing, title = preprocessing for 
+## system archetypes, abstract = process loads input files and saves them in 
+## one data frame;
 
 # wps.resource: Input_Data_v2;
 
