@@ -587,7 +587,7 @@ for(topology in topologies) {
 
 # TODO? define multiple outputs - right now only the final loop run is accessible
 
-myLog("Output files:\n\t\t", output.shapefile, " (shp)\n\t\t",
+myLog("Output files:\n\t\t", # output.shapefile, " (shp)\n\t\t",
       output.codeVector, " (csv code vectors)\n\t\t",
       output.plots, " (plots)\n\t\t",
       output.data, " (Rdata)")
