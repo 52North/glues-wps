@@ -1,89 +1,165 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<script src="js/jquery/jquery.1.8.3.min.js"></script>
-<script src="js/jquery/jquery-ui.1.8.3.min.js"></script>
-<script src="js/openlayers/OpenLayers-closure.js"></script>
-<script src="js/wps-js/wps-js.0.1.1.js"></script>
-<link type="text/css" rel="stylesheet" href="css/wps-js.css">
-<title>wps-js example</title>
-<link rel="shortcut icon" href="favicon.ico" />
-</head>
-<body>
-	<div id="wrapper">
-		<div>
-			<h1>wps-js example</h1>
-			<p>wps-js is an <a href="https://github.com/52North/wps-js/" title="wps-js on GitHub">open source client library</a> for connecting Javascript client to <a href="http://www.opengeospatial.org/standards/wps" title="WPS @ Open Geospatial Consortium">OGC Web Processing</a> services. This page demonstrates how you can use it. More documentation is available in the <a href="https://wiki.52north.org/bin/view/Geoprocessing/Wps-js" title="wps-js wiki page">52&deg;North Wiki</a> and on <a href="https://github.com/52North/wps-js/blob/master/README.md" title="wps-js readme">GitHub</a>.</p>
-		</div>
-		<hl>
-		<div>
-			<select id="wps">
-				<option>Select a WPS</option>
-				<option>http://geoviqua.stcorp.nl/wps</option>
-				<option>http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService</option>
-				<option>http://localhost:8080/wps/WebProcessingService</option>
-				<!-- pyWPS: -->
-				<option>http://openwps.statkart.no/skwms1/wps.elevation</option>
-			</select>
-		</div>
-		<div>
-			<h3>
-				Capabilities <a href="#" id="wpscaller">Show Capabilities</a>
-			</h3>
-			<div class="wps-container">
-				<div id="capabilitiesByClick"></div>
-			</div>
-		</div>
-		<div>
-			<h3>Execute Process</h3>
-			<div class="wps-container">
-				<select id="processes"><option>Select a process</option></select>
-				<span id="processDescriptionLink"></span>
-				<div class="wps-execute-container" id="wps-execute-container"></div>
-			</div>
-			<p></p>
-			<div class="wps-container">
-				<div id="executeProcess"></div>
-			</div>
-		</div>
-	</div>
-	<script type="text/javascript">
-		var capabilities, // the capabilities, read by Format.WPSCapabilities::read
-		process; // the process description from Format.WPSDescribeProcess::read
+<html lang="en">
+    <head>
+        <meta name="generator"
+        content="HTML Tidy for HTML5 (experimental) for Windows https://github.com/w3c/tidy-html5/tree/c63cc39" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- STYLES - - >
+  <link rel="stylesheet" href="../_scripts/css/geoport.css"> 
+  <link rel="stylesheet" href="../_scripts/css/subpage.css">-->
+        <link rel="stylesheet" href="http://geoportal.glues.geo.tu-dresden.de/_scripts/css/geoport.css" />
+        <link rel="stylesheet" href="http://geoportal.glues.geo.tu-dresden.de/_scripts/css/subpage.css" />
+        <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.4.1/pure-min.css" />
+        <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.4.1/base-min.css" />
+        <!--<link rel="stylesheet" href="http://use.typekit.net/c/ed00b8/omnes-pro:n2:n3,proxima-nova:n1:n4:n7.X33:N:2,X35:N:2,Vmv:N:2,W0V:N:2,W0Y:N:2/d?3bb2a6e53c9684ffdc9a9efe1f5b2a62303f0a107c078b501a601d28c8e2edd714516b20f389cdf4d0f7806baf3d9cd5421f23f55150b514ac21ce5fcd0563dc217ff19c42386f81e4224b0e3df2135a11b1bba381da80f34ebb20386ca61589cfed552d3c7749aeae2c1affb17809efad64fcb69c8eb638d84326d8b274d56f758c9b7c2cc3147bd2a2a5dbb0b0385f467e1cc22a2f1e980e3763337ce881a382a20f9cd831158b7c2371eb6804583041eaac24a8b3c2d87c0f9f7f62193f1954a7cdda607c6643b0e4d2c62652877fcca3957f4ef2ac9114b789230ddb9ac67b4fc6add483528473803699c3999bbc62ae0ca8caa9c19a71f5aa525e4e70c4523fb12c52ccf7f224f0d1d4a1044c2af4c233f492d60ef8d4e18f05c0695685be6045eed0dd50856f145f9a39eacb4f3dd87138e6502a0116e09d25cc40bafb8198072a98f14d0cf6dc2fa51efe9b82ad3c49a7866df2a6e8a496c0af569d2c50dc2abc85915961a02412ac0ac48b36202d908d7e2909a8872093c52485ab2d4e48ae168cd79a095100781fa77e0b1f530af644f5793aee5fd4ea719ccce62e8ac46c693125aaa4e35624ca6b7db736c380894025f0c3b8eabe3e34e44d8af11c76b62cd48dfd13179e364b0ea12d8e811b8b4f56dccc394967415737e54b75211bd8fb0e">-->
+        <!-- SCRIPTS -->
+        <!--<script type="text/javascript" language="javascript" src="../_scripts/js/jquery-1.8.2.min.js"></script>-->
+        <!-- WPS CLIENT -->
+        <script src="js/jquery/jquery.1.8.3.min.js"></script>
+        <script src="js/jquery/jquery-ui.1.8.3.min.js"></script>
+        <script src="js/openlayers/OpenLayers-closure.js"></script>
+        <script src="js/wps-js/wps-js.0.1.1.js"></script>
+        <link type="text/css" rel="stylesheet" href="css/wps-js.css" />
 
-		$('#wpscaller').click(function() {
-			var sel = document.getElementById("wps");
-			
-			$('#capabilitiesByClick').wpsCall({
-				url : sel.options[sel.selectedIndex].text,
-				requestType : GET_CAPABILITIES_TYPE
-			});
-		});
-		$(document).ready(function() {
-			$.wpsSetup({
-				configuration : {
-				    showImages : true
-				}				
-			});
-		});
-
-		// add behavior to html elements
-		document.getElementById("processes").onchange = function() {
-			var sel = document.getElementById("processes");
-			
-			describeProcess(sel.options[sel.selectedIndex].text);
-		};
-		document.getElementById("wps").onchange = function() {
-			var sel = document.getElementById("wps");
-			
-			getCapabilities(sel.options[sel.selectedIndex].text);
-		};
+		<script type="text/javascript">
+			$(function() {
+				$("#header").load("../header.html");
+			});	     
+			function showInform () { document.getElementById("inform_menu").style.visibility="visible"; }
+			function hideInform () { document.getElementById("inform_menu").style.visibility="hidden"; }
+			function showDiscover () { document.getElementById("discover_menu").style.visibility="visible"; }
+			function hideDiscover () { document.getElementById("discover_menu").style.visibility="hidden"; }
+			function showUse () { document.getElementById("use_menu").style.visibility="visible"; }
+			function hideUse () { document.getElementById("use_menu").style.visibility="hidden"; }  
+		</script>    
+ 
+		<title>Land system archetypes reproducible analysis | GLUES</title>
+    </head>
+    <body>
+        <div id="header"></div>
+        <h1 id="site_title">Open and reproducible analysis of global land use</h1>
+        <p class="text" style="font-size:130%;">
+            <i>Researchers led by the Helmholtz Centre for Environmental research (UFZ) developed <a href="http://geoportal.glues.geo.tu-dresden.de/stories/landsystemarchetypes.html" title="Land System Archetypes Story Page">a new world map of land use systems</a> based on over 30 diverse indicators such as land use intensity, climate, environment or socioeconomics. They identified twelve land system archetypes (LSA) using a data-driven classification algorithm which is published as an interoperable web process. This showcase demonstrates how scientific analysis can be opened up to both an interested public as well as to fellow scientists.</i>
+        </p>
+        
+		<p class="text">Domain scientists analyze geospatial data in the form of scripts. A very popular statistical analysis language and environment is called <a href="http://www.r-project.org/">R</a>. Publishing geoprocesses as web services allows easy reuse and sharing of algorithms, as well as, integration in spatial information infrastructures and GIS. The Open Geospatial Consortium’s (OGC) <a href="http://www.opengeospatial.org/standards/wps">Web Processing Service</a> (WPS) interface standard  enables interoperability for such applications, meaning that a process can be published by one party and used by another by having a common vocabulary to describe and execute an algorithm.</p>
 		
-	</script>
+		<p class="text"><a href="https://wiki.52north.org/bin/view/Geostatistics/WPS4R">WPS4R</a> is a processing backend for the 52°North WPS, which enables the publication and execution of R scripts as web services based on Rserve. It provides a collaboration platform for analysts, IT staff, and developers. The analysts’ annotated scripts are used to provide process metadata, load input data and store and return process outputs. Script developers or do-main scientists can easily extend their scripts with the required metadata and publish them as standardized web processes without knowledge of OGC standards. IT experts operate the WPS platform and software developers integrate processes into applications based on the WPS standard, such as desktop applications (e.g. GIS), web pages, or service oriented architectures.</p>
+		
+		<img src="https://wiki.52north.org/pub/Geostatistics/WPS4R/2018-09-28_wps4r-architecture.PNG" width="500px" style="margin-left:105px;" />
+        <p class="text" style="font-size:130%">
+            <i>Figure: Architecture and role overview for WPS4R.</i>
+        </p>
+		
+		<p class="text">Within the GLUES project a team of 52&deg;North and UFZ took on the challenge to publish the land system archetypes process in an interoperable and reproducible fashion. The analysis was already large done in R, so the script was annotated with the neccessary metadata to publish in in WPS4R. The algorithm utilizes both public and nonpublic datasets and has several input parameters. In the first stage the web process allows users to experiment with configuration parameters and provides access to raw output data and several visualizations. You can try that out yourself by using the form client below.</p>	
 
-	<div>
-		<p class="infotext">wps-js-0.1.1 #b40b82b as of 20140923145018, build at 20140924-1435</p>
-	</div>
-</body>
+		
+        <img src="story_img/lsawps/outputs.png" width="200px" height="200px" style="margin-left:105px;" />
+        <p class="text" style="font-size:130%">
+            <i>Figure: Screenshot of the possible process outputs, from left to right: ...</i>
+        </p>
+		
+        
+        <div id="wrapper" class="text">
+            <div style="margin: 1em;">
+                <div class="wps-container">
+                    <a href="#" id="wpscaller">Show Capabilities</a>
+                    <div id="capabilitiesByClick"></div>
+                </div>
+            </div>
+            <div style="margin: 1em;">
+                <div class="wps-container">
+                <select id="processes">
+                    <option>Select a process</option>
+                </select> 
+                <span id="processDescriptionLink"></span>
+                <div class="wps-execute-container" id="wps-execute-container"></div></div>
+            </div>
+            <div style="margin: 1em;">
+                <div class="wps-container">
+                    <div id="executeProcess">Process output</div>
+                </div>
+            </div>
+        </div>
+		
+		<p class="text">The client above is based on wps-js, an <a href="https://github.com/52North/wps-js/" title="wps-js on GitHub">open source client library</a> for connecting
+        JavaScript applications with WPS.</p>
+        
+		<p class="text">Some noteworthy pieces of information about the process: (i) you can access the actual script files by clicking on the links for "R Script" and "Import: advanced-plots.R", which even tells you that the analysis is split over two files, (ii) you can access information about the execution environment by clicking on the "R Session Info" link, which gives you detailed technical information about R, and (iii) the whole process is completely reproducible on your own computer or server, since all components are open source software.</p>
+        
+		<p class="text">It was a great exercise for both the scientist and the software developers to shape the admittedly crude "works for me" analysis into stable code that can handle input values selected by users. For example the plotting functions were made for flexible to allow also different numbers of classes. In later stages of the process the team plans to allow users to provide additional input datasets or retrieve specific statistics based on a user-defined area of interest, or to replace the internal data storage with one based on data services such as the Web Coverage Service (WCS).</p>	
+		
+		
+		<p style="font-size:160%;margin-left:115px;font-weight:bold;margin-top:10px;">Further information</p>
+		
+        <ul style="list-style-type: none; margin-left: 80px; font-size:150%;">
+            <li style="padding: 5px 0;">Detailled information on land system archetypes are available in the following publication: Vaclavik, T., Lautenbach, S., Kuemmerle, T., Seppelt, R. (2013): 
+                <b>Mapping global land system archetypes</b>. Global Environmental Change 23(6): 1637-1647. Online available: October 9, 2013, 
+                <span style="color:#759dc0;cursor:pointer;"
+                onclick="window.open(&#39;http://www.sciencedirect.com/science/article/pii/S0959378013001532&#39;);">DOI:
+                10.1016/j.gloenvcha.2013.09.004</span>.</li>
+			<li style="padding: 5px 0;"><strong>More about WPS4R</strong> in the <a href="https://wiki.52north.org/bin/view/Geostatistics/WPS4R" title="WPS4R Documentation Wiki">WPS4R
+                Documentation</a> and this publication: Hinz, M., Nüst, D., Pross, B., Pebesma, E. (2013): Spatial Statistics on the Geospatial Web&quot;. In: The
+                16th AGILE International Conference on Geographic Information Science, Short Papers. 
+                <a href="http://www.agile-online.org/Conference_Paper/CDs/agile_2013/Short_Papers/SP_S3.1_Hinz.pdf"
+                title="Spatial Statistics on the Geospatial Web (PDF)">Download</a></li>
+            <li style="padding: 5px 0;">Detailled information on land system archetypes are available in the following publication:
+                <br />Vaclavik, T., Lautenbach, S., Kuemmerle, T., Seppelt, R. (2013): 
+                <b>Mapping global land system archetypes</b>. Global Environmental Change 23(6): 1637-1647.
+                <br />Online available: October 9, 2013, 
+                <span style="color:#759dc0;cursor:pointer;"
+                onclick="window.open(&#39;http://www.sciencedirect.com/science/article/pii/S0959378013001532&#39;);">DOI:
+                10.1016/j.gloenvcha.2013.09.004</span>.</li>
+            <li style="padding: 5px 0;">52&deg;North WPS instance running the process at 
+                <a href="http://wps1.glues.geo.tu-dresden.de/wps/">http://wps1.glues.geo.tu-dresden.de/wps/</a>, the used 
+                <a href="http://wps1.glues.geo.tu-dresden.de/wps/WebProcessingService?Request=DescribeProcess&amp;service=WPS&amp;version=1.0.0&amp;identifier=org.n52.wps.server.r.glues.systemarchetypes">
+                WPS process description</a>.</li>
+        </ul>
+        
+		<div class="tag_div" style="top:150px;left:0px;">
+            <p class="large_tag_text">STORY</p>
+        </div>
+        <div class="tag_div" style="top:210px;left:0px;">
+            <p class="large_tag_text">GLUES</p>
+        </div>
+        <div class="tag_div" style="top:580px;left:0px;">
+            <p class="tag_text">GEOPROCESSING</p>
+        </div>
+        <div class="tag_div" style="top:650px;left:0px;">
+            <p class="tag_text">LAND USE
+            <br />ARCHETYPES</p>
+        </div>
+        <div class="tag_div" style="top:720px;left:0px;">
+            <p class="tag_text">REPRODUCIBLE
+            <br />RESEARCH</p>
+        </div>
+		
+        <script type="text/javascript">
+                var capabilities, // the capabilities, read by Format.WPSCapabilities::read
+                process; // the process description from Format.WPSDescribeProcess::read
+                
+                var wpsUrl = "http://localhost:8080/wps/WebProcessingService";
+                var processId = "org.n52.wps.server.r.glues.systemarchetypes";
+
+                $("#wpscaller").click(function() {                      
+                        $("#capabilitiesByClick").wpsCall({
+                                url : wpsUrl,
+                                requestType : GET_CAPABILITIES_TYPE
+                        });
+                });
+                $(document).ready(function() {
+                        $.wpsSetup({
+                                configuration : {
+                                    showImages : true
+                                }               
+                        });
+                        
+                        getCapabilities(wpsUrl);
+                        describeProcess(processId);
+                });
+
+        
+		</script>
+    </body>
 </html>
