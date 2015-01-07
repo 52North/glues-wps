@@ -15,8 +15,8 @@
 ################################################################################
 # WPS4R metadata and resources
 # wps.des: id = glues.systemarchetypes, title = SOM for 
-# system archetypes, abstract = process loads input files and then preprocesses
-# them and creates a classification based on a self-organizing map algorithm;
+# system archetypes,
+# abstract = "process loads input files, then preprocesses them and creates a classification based on a self-organizing map algorithm";
 
 # wps.resource: Input_Data_v2;
 
