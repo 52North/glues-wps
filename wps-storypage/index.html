@@ -49,7 +49,7 @@
 		
 		<img src="https://wiki.52north.org/pub/Geostatistics/WPS4R/2018-09-28_wps4r-architecture.PNG" width="720px" style="margin-left:105px;" />
         <p class="text" style="font-size:130%">
-            <i>Figure: Architecture and role overview for WPS4R.</i>
+            <i>Figure: Architecture and role overview for WPS4R: regular users connect to the WPS using desktop or web applications, which internally use the WPS interface; other service oriented platforms (machine to machine communication) use the WPS interface; a scientist develops a script, annotates it with metadata and publishes it using the WPS's Web Admin Console; the IT administrator manages a server and the required software (e.g. servlet container for the WPS application and Rserve). WPS4R communicates with R via Rserve, so that Rserve can also run on a seperate (probably only internally available) server.</i>
         </p>
 		
 		<p class="text">Within the GLUES project a team of 52&deg;North and UFZ took on the challenge to publish the land system archetypes process in an interoperable and reproducible fashion. The analysis was already large done in R, so the script was annotated with the neccessary metadata to publish in in WPS4R. The algorithm utilizes both public and nonpublic datasets and has several input parameters. In the first stage the web process allows users to experiment with configuration parameters and provides access to raw output data and several visualizations. You can try that out yourself by using the form client below.</p>	
@@ -83,12 +83,12 @@
             </div>
         </div>
 		
-		<p class="text">The client above is based on wps-js, an <a href="https://github.com/52North/wps-js/" title="wps-js on GitHub">open source client library</a> for connecting
+		<p class="text">The client above is based on <em>wps-js</em>, an <a href="https://github.com/52North/wps-js/" title="wps-js on GitHub">open source client library</a> for connecting
         JavaScript applications with WPS.</p>
         
 		<p class="text">Some noteworthy pieces of information about the process: (i) you can access the actual script files by clicking on the links for "R Script" and "Import: advanced-plots.R", which even tells you that the analysis is split over two files, (ii) you can access information about the execution environment by clicking on the "R Session Info" link, which gives you detailed technical information about R, and (iii) the whole process is completely reproducible on your own computer or server, since all components are open source software.</p>
         
-		<p class="text">It was a great exercise for both the scientist and the software developers to shape the admittedly crude "works for me" analysis into stable code that can handle input values selected by users. For example the plotting functions were made for flexible to allow also different numbers of classes. In later stages of the process the team plans to allow users to provide additional input datasets or retrieve specific statistics based on a user-defined area of interest, or to replace the internal data storage with one based on data services such as the Web Coverage Service (WCS).</p>	
+		<p class="text">It was a great exercise for both the scientist and the software developers to shape the admittedly prototypical "works for me" analysis that sufficed for the manual creation of plots for the publication (see below) into stable code that can handle input values selected by users. For example the plotting functions were made flexible to allow different numbers of classes. In later stages of the process the team plans to allow users to provide additional input datasets or retrieve specific statistics based on a user-defined area of interest (<i>"How is my study area represented by the calculated LSA?"</i>), or to replace the internal data storage with one based on data services such as the Web Coverage Service (WCS).</p>	
 		
 		
 		<p style="font-size:160%;margin-left:115px;font-weight:bold;margin-top:10px;">Further information</p>
@@ -100,21 +100,13 @@
                 onclick="window.open(&#39;http://www.sciencedirect.com/science/article/pii/S0959378013001532&#39;);">DOI:
                 10.1016/j.gloenvcha.2013.09.004</span>.</li>
 			<li style="padding: 5px 0;"><strong>More about WPS4R</strong> in the <a href="https://wiki.52north.org/bin/view/Geostatistics/WPS4R" title="WPS4R Documentation Wiki">WPS4R
-                Documentation</a> and this publication: Hinz, M., Nüst, D., Pross, B., Pebesma, E. (2013): Spatial Statistics on the Geospatial Web&quot;. In: The
+                Documentation</a> and this publication: Hinz, M., Nüst, D., Pross, B., Pebesma, E. (2013): <b>Spatial Statistics on the Geospatial Web</b>. In: The
                 16th AGILE International Conference on Geographic Information Science, Short Papers. 
                 <a href="http://www.agile-online.org/Conference_Paper/CDs/agile_2013/Short_Papers/SP_S3.1_Hinz.pdf"
                 title="Spatial Statistics on the Geospatial Web (PDF)">Download</a></li>
-            <li style="padding: 5px 0;">Detailled information on land system archetypes are available in the following publication:
-                <br />Vaclavik, T., Lautenbach, S., Kuemmerle, T., Seppelt, R. (2013): 
-                <b>Mapping global land system archetypes</b>. Global Environmental Change 23(6): 1637-1647.
-                <br />Online available: October 9, 2013, 
-                <span style="color:#759dc0;cursor:pointer;"
-                onclick="window.open(&#39;http://www.sciencedirect.com/science/article/pii/S0959378013001532&#39;);">DOI:
-                10.1016/j.gloenvcha.2013.09.004</span>.</li>
-            <li style="padding: 5px 0;">52&deg;North WPS instance running the process at 
-                <a href="http://wps1.glues.geo.tu-dresden.de/wps/">http://wps1.glues.geo.tu-dresden.de/wps/</a>, the used 
-                <a href="http://wps1.glues.geo.tu-dresden.de/wps/WebProcessingService?Request=DescribeProcess&amp;service=WPS&amp;version=1.0.0&amp;identifier=org.n52.wps.server.r.glues.systemarchetypes">
-                WPS process description</a>.</li>
+            <li style="padding: 5px 0;">52&deg;North WPS instance running the process available at 
+                <a href="http://wps1.glues.geo.tu-dresden.de/wps/">http://wps1.glues.geo.tu-dresden.de/wps/</a>, the used process is
+                <a id="descriptionLink">org.n52.wps.server.r.glues.systemarchetypes</a>.</li>
         </ul>
         
 		<div class="tag_div" style="top:150px;left:0px;">
@@ -159,7 +151,7 @@
                         describeProcess(processId);
                 });
 
-        
+				$("#descriptionLink").attr("href", wpsUrl + "?Request=DescribeProcess&service=WPS&version=1.0.0&identifier=" + processId);
 		</script>
     </body>
 </html>
