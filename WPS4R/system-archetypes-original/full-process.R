@@ -20,6 +20,10 @@
 
 # wps.resource: Input_Data_v2;
 
+# wps.metadata: title = GLUES story page, href = http://geoportal.glues.geo.tu-dresden.de/stories/landsystemarchetypes.html;
+# wps.metadata: title = Journal paper: Mapping global land system archetypes, href = http://www.sciencedirect.com/science/article/pii/S0959378013001532;
+# wps.metadata: title = Datasets in catalogue, href = http://catalog.glues.geo.tu-dresden.de:8080/terraCatalog/OpenSearch.do?search=land+system+archetype&type=/Query/OpenSearch.do;
+
 ################################################################################
 # required packages
 require(sp)
