@@ -39,14 +39,14 @@
         <div id="header"></div>
         <h1 id="site_title">Open analysis of global land use</h1>
         <p class="text" style="font-size:130%;">
-            <i>Researchers led by the Helmholtz Centre for Environmental Research (UFZ) developed <a href="http://geoportal.glues.geo.tu-dresden.de/stories/landsystemarchetypes.html" title="Land System Archetypes Story Page">a new world map of land use systems</a> based on over 30 diverse indicators of land use intensity, climate, environment or socioeconomics. They identified twelve land system archetypes (LSA) using a data-driven classification algorithm which is published as an interoperable web process. This showcase demonstrates how scientific analysis can be opened up to both an interested public as well as to fellow scientists.</i>
+            <i>Researchers led by the Helmholtz Centre for Environmental Research (UFZ) developed <a href="http://geoportal.glues.geo.tu-dresden.de/stories/landsystemarchetypes.html" title="Land System Archetypes Story Page">a new world map of land use systems</a> based on over 30 diverse indicators of land use intensity, climate, environment or socio-economics. They identified twelve land system archetypes (LSA) using a data-driven classification algorithm which is published as an interoperable web process. This showcase demonstrates how scientific analysis can be opened up to both an interested public as well as to fellow scientists.</i>
         </p>
 		
 		<p class="text">Within the GLUES project a team of 52&deg;North and UFZ took on the challenge to publish the land system archetypes process in an interoperable and reproducible fashion. The analysis was originally performed in R, a language for statistical computing in graphics. The analysis source code was extended to be published in a web processing platform. The algorithm utilizes both public and non-public datasets and has several input parameters. In the first stage the web process allows users to experiment with configuration parameters and provides access to raw output data and several visualizations. You can try that out yourself by using the form client below.</p>
 		
         <img src="images/example-outputs_sampling-100.png" width="920px" style="margin-left:105px;" />
         <p class="text" style="font-size:130%">
-            <i>Figure: Screenshot of some of outputd plots based on mere 100 sampling points: (a) classification information (output of the self-organizing map) showing how the input variables (color-coded) influence each of the output classes (circles at the top); (b) global plot of "property-distance" which is a measure of classification quality; (c) the global land use archetypes map in a very coarse version; (d) statistical background infromation of the self-organizing map.</i>
+            <i>Figure: Screenshot of some of output plots based on mere 100 sampling points for illustration purposes: (a) classification information (output of the self-organizing map) showing how the input variables (colour-coded) influence each of the output classes (circles at the top); (b) global plot of "property-distance" which is a measure of classification quality; (c) the global land use archetypes map in a very coarse version; (d) statistical background information of the self-organizing map.</i>
         </p>
 		
         
@@ -72,8 +72,7 @@
             </div>
         </div>
 		
-		<p class="text">The client above is based on <em>wps-js</em>, an <a href="https://github.com/52North/wps-js/" title="wps-js on GitHub">open source client library</a> for connecting
-        JavaScript applications with WPS.</p>
+		<p class="text">The client above is based on <em>wps-js</em>, an <a href="https://github.com/52North/wps-js/" title="wps-js on GitHub">open source client library</a> for connecting JavaScript applications with WPS.</p>
         
 		<p class="text">Some noteworthy pieces of information about the process: (i) you can access the actual script files by clicking on the links for "R Script" and "Import: advanced-plots.R", which even tells you that the analysis is split over two files, (ii) you can access information about the execution environment by clicking on the "R Session Info" link, which gives you detailed technical information about R, and (iii) the whole process is completely reproducible on your own computer or server, since all components are open source software.</p>
         
@@ -81,23 +80,22 @@
 		
 		<h2>Technical background</h2>
         
-		<p class="text">Scientists often analyze geospatialusing scipts of computer code to run analytical processes. A very popular analysis language and environment used in science as well as industry is called <a href="http://www.r-project.org/">R</a>. Publishing geoprocesses as web services allows easy reuse and sharing of algorithms, as well as, integration in spatial information infrastructures and GIS. The Open Geospatial Consortium’s (OGC) <a href="http://www.opengeospatial.org/standards/wps">Web Processing Service</a> (WPS) interface standard  enables interoperability for such applications. This means that a process can be published by one party and used by another, while having a common vocabulary to describe and execute an algorithm.</p>
+		<p class="text">Scientists often analyse geospatial data using scripts of computer code to run analytical processes. A very popular analysis language and environment used in science as well as industry is called <a href="http://www.r-project.org/">R</a>. Publishing geoprocesses as web services allows easy reuse and sharing of algorithms, as well as, integration in spatial information infrastructures and GIS. The Open Geospatial Consortium (OGC) <a href="http://www.opengeospatial.org/standards/wps">Web Processing Service</a> (WPS) interface standard  enables interoperability for such applications. This means that a process can be published by one party and used by another, while having a common vocabulary to describe and execute an algorithm.</p>
 		
-		<p class="text"><a href="https://wiki.52north.org/bin/view/Geostatistics/WPS4R">WPS4R</a> is a processing backend for the 52°North WPS, which enables the publication and execution of R scripts as web services based on Rserve. It provides a collaboration platform for analysts, IT staff, and developers. The analysts' annotated scripts are used to provide process metadata, load input data and store and return process outputs. Script developers or scientists can easily extend their scripts with the required metadata and publish them as standardized web processes without knowledge of OGC standards or web services. IT experts operate the WPS platform and software developers integrate processes into applications based on the WPS standard, such as desktop applications (e.g. GIS), web pages, or service oriented architectures.</p>
+		<p class="text"><a href="https://wiki.52north.org/bin/view/Geostatistics/WPS4R">WPS4R</a> is a processing backend for the 52&deg;North WPS, which enables the publication and execution of R scripts as web services based on Rserve. It provides a collaboration platform for analysts, IT staff, and developers. The analysts' annotated scripts are used to provide process metadata, load input data and store and return process outputs. Script developers or scientists can easily extend their scripts with the required metadata and publish them as standardized web processes without knowledge of OGC standards or web services. IT experts operate the WPS platform and software developers integrate processes into applications based on the WPS standard, such as desktop applications (e.g. GIS), web pages, or service oriented architectures.</p>
 		
 		<img src="images/wps4r-architecture.png" width="760px" style="margin-left:105px;" />
         <p class="text" style="font-size:130%">
             <i>Figure: Architecture overview for WPS4R: regular users connect to the WPS using desktop or web applications, which internally use the WPS interface; other service oriented platforms (machine to machine communication) use the WPS interface; a scientist develops a script, annotates it with metadata and publishes it using the WPS's Web Admin Console; the IT administrator manages a server and the required software (e.g. servlet container for the WPS application and Rserve). WPS4R communicates with R via Rserve, so that R can also run on a separate (often only internally available) server.</i>
         </p>
 		
-		<p class="text">To publish the land system archetypes analysis, which was already largely done in R, the script was annotated with the neccessary metadata to publish it in WPS4R. The algorithm utilizes both public and nonpublic datasets and has several input parameters. To demonstrate the process in this story page, the majority of the input parameters was preconfigured and is hidden in the wps-js client above. The required input datasets were uploaded to the WPS server. If you want to access the process interface directly see the further information below.</p>
-		
+		<p class="text">To publish the land system archetypes analysis, which was already largely done in R, the script was annotated with the necessary metadata to publish it in WPS4R. The algorithm utilizes both public and non-public datasets and has several input parameters. To demonstrate the process in this story page, the majority of the input parameters was preconfigured and is hidden in the wps-js client above. The required input datasets were uploaded to the WPS server. If you want to access the process interface directly see the further information below.</p>
 		
 		<p style="font-size:160%;margin-left:115px;font-weight:bold;margin-top:10px;">Further information</p>
 		
         <ul style="list-style-type: none; margin-left: 75px; font-size:150%;">
 			<li style="padding: 5px 0;">Important facts are summarized in a <b>fact sheet</b>, which is available online: <a href="http://geoportal-glues.ufz.de/documents/Fact_Sheet_WPS4R.pdf">WPS4R Fact sheet (Document section in GLUES Geoportal)</a>.</li>
-            <li style="padding: 5px 0;">Detailled information on land system archetypes are available in the following publication: Vaclavik, T., Lautenbach, S., Kuemmerle, T., Seppelt, R. (2013): 
+            <li style="padding: 5px 0;">Detailed information on land system archetypes are available in the following publication: Vaclavik, T., Lautenbach, S., Kuemmerle, T., Seppelt, R. (2013): 
                 <b>Mapping global land system archetypes</b>. Global Environmental Change 23(6): 1637-1647. Online available: October 9, 2013, 
                 <span style="color:#759dc0;cursor:pointer;"
                 onclick="window.open(&#39;http://www.sciencedirect.com/science/article/pii/S0959378013001532&#39;);">DOI:
@@ -111,7 +109,7 @@
                 <a href="http://wps1.glues.geo.tu-dresden.de/wps/">http://wps1.glues.geo.tu-dresden.de/wps/</a>, the used process is
                 <a id="descriptionLink">org.n52.wps.server.r.glues.systemarchetypes</a>.</li>
             <li style="padding: 5px 0;"><b>Source code</b> is available on GitHUB: WPS4R is part of the <a href="https://github.com/52North/WPS">52&deg;North WPS repository</a>, the analysis script is in the <a href="https://github.com/52North/glues-wps">glues-wps repository</a>.</li>
-			<li style="padding: 5px 0;">The 52°North community <b>forum</b> for discussion on R and WPS4R is available here: <a href="http://geostatistics.forum.52north.org/">Geostatistics Community Forum</a>.</li>
+			<li style="padding: 5px 0;">The 52%deg;North community <b>forum</b> for discussion on R and WPS4R is available here: <a href="http://geostatistics.forum.52north.org/">Geostatistics Community Forum</a>.</li>
 			<li style="padding: 5px 0;"><b>Contact</b> Daniel Nüst (d.nuest@52north.org) from 52&deg;North for technical questions on WPS4R and R, and Tomas Vaclavik (tomas.vaclavik@ufz.de) from UFZ for questions on the analysis and archetypes.</li>
         </ul>
         
