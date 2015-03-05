@@ -14,15 +14,16 @@
 
 ################################################################################
 # WPS4R metadata and resources
-# wps.des: id = glues.systemarchetypes, title = SOM for 
-# system archetypes,
-# abstract = "process loads input files, then preprocesses them and creates a classification based on a self-organizing map algorithm";
+# wps.des: id = glues.systemarchetypes, title = SOM for land use system archetypes,
+# abstract = "Open land use analysis: process loads input files, then preprocesses them and creates a classification based on a self-organizing map algorithm";
 
 # wps.resource: Input_Data_v2;
 
-# wps.metadata: title = GLUES story page, href = http://geoportal.glues.geo.tu-dresden.de/stories/landsystemarchetypes.html;
+# wps.metadata: title = GLUES story page 'Global map provides new insights into land use', href = http://geoportal-glues.ufz.de/stories/landsystemarchetypes.html;
+# wps.metadata: title = GLUES story page 'Open analysis of global land use', href = http://geoportal-glues.ufz.de/stories/openanalysis.html;
 # wps.metadata: title = Journal paper: Mapping global land system archetypes, href = http://www.sciencedirect.com/science/article/pii/S0959378013001532;
-# wps.metadata: title = Datasets in catalogue, href = http://catalog.glues.geo.tu-dresden.de:8080/terraCatalog/OpenSearch.do?search=land+system+archetype&type=/Query/OpenSearch.do;
+# wps.metadata: title = Output dataset in GLUES catalogue (dataset), href = http://catalog.glues.geo.tu-dresden.de/terraCatalog/Query/ShowCSWInfo.do?fileIdentifier=glues:ufz:metadata:dataset:landsystemarchetypes;
+# wps.metadata: title = Output dataset in GLUES catalogue (service), href = http://catalog.glues.geo.tu-dresden.de/terraCatalog/Query/ShowCSWInfo.do?fileIdentifier=e9d85591-9ed1-49a1-8251-571f727ae433;
 
 ################################################################################
 # required packages
