@@ -29,7 +29,17 @@
 # required packages
 require(sp)
 require(raster)
+
+# code below only works with kohonen <= 2.0.15
+#kohonen215url <- "http://cran.r-project.org/src/contrib/Archive/kohonen/kohonen_2.0.15.tar.gz"
+#devtools::install_url(url = kohonen215url)
+#install.packages(kohonen215url, repos=NULL, type="source")
+if(packageVersion("kohonen")[1,3] > 15) {
+    stop(paste("This script only works with package kohonen version <= 2.0.15, but the version is ", 
+               packageVersion("kohonen")))
+}
 require(kohonen)
+
 require(vegan)
 require(maptools)
 
@@ -209,7 +219,7 @@ repRainbow <- function(n, length.col=6) {
 # use this for testing
 #wps.off;
 #setwd(tempdir())
-setwd("C:\\Users\\Daniel\\Documents\\2014_GLUES\\WPS4R\\System-Archetypes")
+setwd("C:\\Users\\Daniel\\Documents\\52N-Projects\\2014_GLUES\\WPS4R\\System-Archetypes")
 #wps.on;
 
 
@@ -279,7 +289,7 @@ myLog("Input datasets: ", toString(files))
 # stratified, nonaligned, hexagonal, clusted or Fibonacci)",
 # value = regular;
 #wps.off;
-sampleSize <- 1*10^6 # 100
+sampleSize <- 100 # 1*10^6 # 100
 samplingType <- "regular"
 #wps.on;
 

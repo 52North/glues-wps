@@ -876,6 +876,19 @@ function isImageMimetype(mimetype) {
 	
 	return ($.inArray(mimetype, imageMimetypes) > -1);
 }
+
+function stringify(format){
+
+    return '{"mimeType" : "' + (format.mimeType ? format.mimeType : "") + '", "schema" : "' + (format.schema ? format.schema : "") + '", "encoding" : "' + (format.encoding ? format.encoding : "") + '"}';
+    
+}
+
+function escapeCharactersForSelect(id){
+
+    var result = id.replace(/\./g,"\\.");
+
+    return result;
+}
 var WPSConfiguration = Class.extend({
 	
 	init : function(settings) {
@@ -1038,6 +1051,7 @@ var TEMPLATE_EXECUTE_RESPONSE_EXTENSION_MARKUP_DOWNLOAD = '\
 	
 var TEMPLATE_EXECUTE_RESPONSE_EXTENSION_MARKUP_IMAGE = '\
 	<div class="wps-execute-response-result"> \
+			<label class="wps-extension-item-label">${key}</label><br/> \
 			<img src="data:${mimetype};base64, ${value}" /> \
 	</div>';
 
@@ -1072,14 +1086,17 @@ var ExecuteResponse = BaseResponse.extend({
 			var reference = element.getElementsByTagNameNS(WPS_100_NAMESPACE, "Reference");
 			var data = element.getElementsByTagNameNS(WPS_100_NAMESPACE, "Data");
 			var value;
+			var mimetype;
 			var valueType = null;
 			if (reference && reference.length > 0) { // create link from reference
 				value = reference[0].getAttribute("href");
+				mimetype = reference[0].getAttribute('mimeType');
 				array[i] = {
 						key : jQuery(identifier).text(),
 						title: jQuery(title).text(),
 						value : value,
-						ref: true
+						ref: true,
+						mimetype : mimetype
 				};
 			}
 			else {
@@ -1095,13 +1112,18 @@ var ExecuteResponse = BaseResponse.extend({
 				else {
 					value = "n/a";
 				}
+				var complexData = element.getElementsByTagNameNS(WPS_100_NAMESPACE, "ComplexData");
+				if(complexData) {
+				    mimetype = complexData[0].getAttribute('mimeType');
+				}
 				
 				array[i] = {
 						key : jQuery(identifier).text(),
 						title: jQuery(title).text(),
 						value : value,
 						valueType: valueType,
-						ref: false
+						ref: false,
+						mimetype : mimetype
 				};
 			}
 		}
@@ -1115,13 +1137,8 @@ var ExecuteResponse = BaseResponse.extend({
 		var process = this.xmlResponse.getElementsByTagNameNS(WPS_100_NAMESPACE, "Process");
 		var status = this.xmlResponse.getElementsByTagNameNS(WPS_100_NAMESPACE, "Status");
 		var reference = this.xmlResponse.getElementsByTagNameNS(WPS_100_NAMESPACE, "Reference");
-		
-		var mimetype = null;
-		
-		if(reference && reference[0]){
-		    mimetype = reference[0].getAttribute('mimeType');
-		}
-		
+		var complexData = this.xmlResponse.getElementsByTagNameNS(WPS_100_NAMESPACE, "ComplexData");		
+	
 		var properties = null;
 		var extensions = {};
 		var statusText = null;
@@ -1243,24 +1260,22 @@ var ExecuteResponse = BaseResponse.extend({
 			var extensionDiv = result.children('#wps-execute-response-extension');
 			if (extensions.outputs) {
 				jQuery(extensions.outputs).each(function(key, value) {
-						if(value.ref == true) {						
+						if(value.ref == true) {
+							jQuery.tmpl(TEMPLATE_EXECUTE_RESPONSE_EXTENSION_MARKUP_DOWNLOAD, value).appendTo(extensionDiv);	
+						}else {
+						    var mimetype = value.mimetype;
 						    if(isImageMimetype(mimetype) && wps.isShowImages()){
-						    //get the image from the url
-						    
-						    $.get(value.value, function( data ) {
+						        //get the image from the url
 			                    properties = {
+			                            key : value.key,
 			                		    mimetype : mimetype,
-			                		    value : data
+			                		    value : value.value
 			                    };
-			                    jQuery.tmpl(TEMPLATE_EXECUTE_RESPONSE_EXTENSION_MARKUP_IMAGE, properties).appendTo(extensionDiv);	
-                            });
-						    
+			                    jQuery.tmpl(TEMPLATE_EXECUTE_RESPONSE_EXTENSION_MARKUP_IMAGE, properties).appendTo(extensionDiv);
 							
 						    }else{
-							    jQuery.tmpl(TEMPLATE_EXECUTE_RESPONSE_EXTENSION_MARKUP_DOWNLOAD, value).appendTo(extensionDiv);						    
+							    jQuery.tmpl(TEMPLATE_EXECUTE_RESPONSE_EXTENSION_MARKUP_VALUE, value).appendTo(extensionDiv);					    
 						    }
-						}else {
-							jQuery.tmpl(TEMPLATE_EXECUTE_RESPONSE_EXTENSION_MARKUP_VALUE, value).appendTo(extensionDiv);
 						}
 					});
 			}
@@ -1575,9 +1590,27 @@ var EXECUTE_REQUEST_XML_COMPLEX_DATA_ENCODING_INPUT = '<wps:Input>\
     </wps:Data>\
 </wps:Input>';
 
-var EXECUTE_REQUEST_XML_COMPLEX_DATA_BY_REFERENCE_INPUT = '<wps:Input>\
+var EXECUTE_REQUEST_XML_COMPLEX_DATA_BY_REFERENCE_ALL_INPUT = '<wps:Input>\
+    <ows:Identifier>${identifier}</ows:Identifier>\
+    <wps:Reference schema="${schema}" mimeType="${mimeType}" encoding="${encoding}"\
+	xlink:href="${complexPayload}"/>\
+  </wps:Input>';
+
+var EXECUTE_REQUEST_XML_COMPLEX_DATA_BY_REFERENCE_SCHEMA_INPUT = '<wps:Input>\
     <ows:Identifier>${identifier}</ows:Identifier>\
     <wps:Reference schema="${schema}" mimeType="${mimeType}"\
+	xlink:href="${complexPayload}"/>\
+  </wps:Input>';
+
+var EXECUTE_REQUEST_XML_COMPLEX_DATA_BY_REFERENCE_ENCODING_INPUT = '<wps:Input>\
+    <ows:Identifier>${identifier}</ows:Identifier>\
+    <wps:Reference encoding="${encoding}" mimeType="${mimeType}"\
+	xlink:href="${complexPayload}"/>\
+  </wps:Input>';
+
+var EXECUTE_REQUEST_XML_COMPLEX_DATA_BY_REFERENCE_INPUT = '<wps:Input>\
+    <ows:Identifier>${identifier}</ows:Identifier>\
+    <wps:Reference mimeType="${mimeType}"\
 	xlink:href="${complexPayload}"/>\
   </wps:Input>';
 
@@ -1735,7 +1768,21 @@ var ExecuteRequest = PostRequest.extend({
 	createComplexDataInput : function(input) {
 		var markup;
 		if (input.asReference) {
-			markup = this.fillTemplate(EXECUTE_REQUEST_XML_COMPLEX_DATA_BY_REFERENCE_INPUT, input);
+			if (input.schema && input.encoding) {
+				markup = this.fillTemplate(EXECUTE_REQUEST_XML_COMPLEX_DATA_BY_REFERENCE_ALL_INPUT, input);
+			}
+			
+			else if (input.schema && !input.encoding) {
+				markup = this.fillTemplate(EXECUTE_REQUEST_XML_COMPLEX_DATA_BY_REFERENCE_SCHEMA_INPUT, input);
+			}
+			
+			else if (!input.schema && input.encoding) {
+				markup = this.fillTemplate(EXECUTE_REQUEST_XML_COMPLEX_DATA_BY_REFERENCE_ENCODING_INPUT, input);
+			}
+			
+			else {
+			    markup = this.fillTemplate(EXECUTE_REQUEST_XML_COMPLEX_DATA_BY_REFERENCE_INPUT, input);
+			}
 		}
 		else {
 			if (input.schema && input.encoding) {
@@ -1925,11 +1972,11 @@ var GetCapabilitiesPostRequest = PostRequest.extend({
 });
 
 var TEMPLATE_EXECUTE_COMPLEX_INPUTS_MARKUP = '\
-	<div class="wps-execute-complex-inputs" id="input_${identifier}"> \
+	<div class="wps-execute-complex-inputs" id="${identifier}"> \
 		<div class="wps-execute-response-process"> \
 			<ul class="wps-execute-response-list"> \
 				<li class="wps-execute-response-list-entry"> \
-					<label class="wps-input-item-label">${identifier}${required}</label>{{html inputField}}{{html asReference}}</li> \
+					<label class="wps-input-item-label">${labelText}${required}</label>{{html inputField}}{{html asReference}}</li> \
 				<li class="wps-execute-response-list-entry"> \
 					{{html formats}}{{html copyButton}}</li> \
 			</ul> \
@@ -1938,38 +1985,38 @@ var TEMPLATE_EXECUTE_COMPLEX_INPUTS_MARKUP = '\
 
 var TEMPLATE_EXECUTE_COMPLEX_INPUTS_COPY_MARKUP = '\
 				<li class="wps-execute-response-list-entry"> \
-					<label class="wps-input-item-label">${identifier}${required}</label>{{html inputField}}{{html asReference}}</li> \
+					<label class="wps-input-item-label">${labelText}${required}</label>{{html inputField}}{{html asReference}}</li> \
 				<li class="wps-execute-response-list-entry"> \
 					{{html formats}}</li>';
 
 var TEMPLATE_EXECUTE_LITERAL_INPUTS_MARKUP = '\
-	<div class="wps-execute-literal-inputs" id="input_${identifier}"> \
+	<div class="wps-execute-literal-inputs" id="${identifier}"> \
 		<div class="wps-execute-response-process"> \
 			<ul class="wps-execute-response-list"> \
 				<li class="wps-execute-response-list-entry"> \
-					<label class="wps-input-item-label">${identifier}${required}</label>{{html inputField}}{{html copyButton}}</li> \
+					<label class="wps-input-item-label">${labelText}${required}</label>{{html inputField}}{{html copyButton}}</li> \
 			</ul> \
 		</div> \
 	</div>';
 	
 var TEMPLATE_EXECUTE_LITERAL_INPUTS_COPY_MARKUP = '\
 				<li class="wps-execute-response-list-entry"> \
-					<label class="wps-input-item-label">${identifier}${required}</label>{{html inputField}}</li>';
+					<label class="wps-input-item-label">${labelText}${required}</label>{{html inputField}}</li>';
 
 
 var TEMPLATE_EXECUTE_BBOX_INPUTS_MARKUP = '\
-	<div class="wps-execute-bbox-inputs" id="input_${identifier}"> \
+	<div class="wps-execute-bbox-inputs" id="${identifier}"> \
 		<div class="wps-execute-response-process"> \
 			<ul class="wps-execute-response-list"> \
 				<li class="wps-execute-response-list-entry"> \
-					<label class="wps-input-item-label">${identifier}${required}</label>{{html inputField}}<label>${description}</label>{{html copyButton}}</li> \
+					<label class="wps-input-item-label">${labelText}${required}</label>{{html inputField}}<label>${description}</label>{{html copyButton}}</li> \
 			</ul> \
 		</div> \
 	</div>';
 
 var TEMPLATE_EXECUTE_BBOX_INPUTS_COPY_MARKUP = '\
 				<li class="wps-execute-response-list-entry"> \
-					<label class="wps-input-item-label">${identifier}${required}</label>{{html inputField}}<label>${description}</label></li>';
+					<label class="wps-input-item-label">${labelText}${required}</label>{{html inputField}}<label>${description}</label></li>';
 
 var TEMPLATE_EXECUTE_OUTPUTS_MARKUP = '\
 	<div class="wps-execute-complex-inputs"> \
@@ -1980,19 +2027,31 @@ var TEMPLATE_EXECUTE_OUTPUTS_MARKUP = '\
 	</div>';
 
 var TEMPLATE_EXECUTE_COMPLEX_OUTPUTS_MARKUP = '\
+	    <div class="wps-execute-complex-inputs" id="${identifier}"> \
 				<li class="wps-execute-response-list-entry"> \
 					<label class="wps-input-item-label">${identifier}</label>{{html settings}}{{html asReference}}</li> \
 				<li class="wps-execute-response-list-entry"> \
-					{{html formats}}</li>';
-
+					{{html formats}}</li> \
+	    </div>';
 
 var TEMPLATE_EXECUTE_LITERAL_OUTPUTS_MARKUP = '\
+	<div class="wps-execute-complex-inputs" id="${identifier}"> \
 				<li class="wps-execute-response-list-entry"> \
-					<label class="wps-input-item-label">${identifier}</label>{{html settings}}{{html asReference}}</li>';
+					<label class="wps-input-item-label">${identifier}</label>{{html settings}}{{html asReference}}</li> \
+	</div>';
 
 var TEMPLATE_EXECUTE_BBOX_OUTPUTS_MARKUP = '\
+	<div class="wps-execute-complex-inputs" id="${identifier}"> \
 				<li class="wps-execute-response-list-entry"> \
-					<label class="wps-input-item-label">${identifier}</label>{{html settings}}{{html asReference}}</li>';
+					<label class="wps-input-item-label">${identifier}</label>{{html settings}}{{html asReference}}</li> \
+	</div>';
+	
+//array for storing literalvalues, used to obtain the defaultvalues that are defined by the server for this input
+var literalInputsWithServerSideDefaultValues = [];
+
+var processIdentifier;
+		
+var clientSideDefaultValuesForProcess;
 
 var FormBuilder = Class.extend({
 	
@@ -2005,39 +2064,183 @@ var FormBuilder = Class.extend({
 	},
 	
 	buildExecuteForm : function(targetDiv, processDescription, executeCallback) {
+	 	
+	 	literalInputsWithServerSideDefaultValues = [];
+	 	
+	 	processIdentifier = processDescription.identifier;
+
+        if(typeof clientSideDefaultValues !== 'undefined'){
+            clientSideDefaultValuesForProcess = clientSideDefaultValues[processIdentifier];
+        }
+	 	
 	 	var formElement = jQuery('<form id="wps-execute-form"></form>');
 	 	formElement.submit(function() {
 	 			executeCallback("wps-execute-form");
 	        	return false;
-	        });
+	    });
+        //must be added right at the beginning so that predefined values can be added to textareas/inputs/selects
+        targetDiv.append(jQuery("<div>").append(formElement));
+        
 	 	if(processDescription["abstract"] != null && processDescription["abstract"] != "null") {
 	 		formElement.append(jQuery('<span id="abstract">' + processDescription["abstract"] + "</span>"));
 	 	}
-	 	formElement.append(this.createFormInputs(processDescription.dataInputs));
-		formElement.append(this.createFormOutputs(processDescription));
-	 	formElement.append(jQuery('<input type="hidden" name="processIdentifier" value="'+processDescription.identifier+'" />'));
+	    
+	    var container = jQuery('<div id="input"></div>');
+	    
+	 	formElement.append(container);
+        
+        this.createFormInputs(processDescription.dataInputs, container);
+        
+        if(literalInputsWithServerSideDefaultValues.length > 0){
+        
+            var button = jQuery('<button type="button" id="fillServerSideDefaultValues-button">Fill in default values for LiteralData inputs defined by the WPS process</button>');
+            formElement.append(button);
+	        	
+	        $('#wps-execute-container').on('click', '#fillServerSideDefaultValues-button', function () {
+	        	       
+	           for (var i=0; i < literalInputsWithServerSideDefaultValues.length; i++) {
+	               var inputIDArray = literalInputsWithServerSideDefaultValues[i];	           
+	               
+	               var input = $('input[name='+ escapeCharactersForSelect(inputIDArray[0]) + ']');
+	               
+	               if(input){
+	                   input.val(inputIDArray[1]);
+	               }
+	               
+	               var select = $('select[name='+ escapeCharactersForSelect(inputIDArray[0]) + ']');
+	               
+	               if(select){
+	                   select.val(inputIDArray[1]);
+	               }	           
+	           } 
+	            
+		    });
+		}
+	    
+	    var outputContainer = jQuery('<div id="input"></div>');
+        
+		formElement.append(outputContainer);
+		
+		this.createFormOutputs(processDescription, outputContainer);
+	 	formElement.append(jQuery('<input type="hidden" name="processIdentifier" value="'+processIdentifier+'" />'));
 	        
         var executeButton = jQuery("<button id=\"btn_execute\">Execute</button>");
         formElement.append(executeButton);
-        
-        targetDiv.append(jQuery("<div>").append(formElement));
 	},
 	
-	createFormInputs : function(inputs){
+	fillInClientSideDefaultValuesForInput : function(id, values){
 	    
-	    var container = jQuery('<div id="input"></div>');
+	    var textarea = $('textarea[name=input_'+ escapeCharactersForSelect(id) + ']');
+	    if(textarea){
+	        //complex input
+	        textarea.val(values.value);
+	        
+	        if(values.asReference){
+	            var asReferenceCheckbox = $('input[name=checkbox_input_'+ id + ']');
+	            asReferenceCheckbox.prop('checked', true);
+	        }
+	        
+	        var format = {"mimeType" : values.mimeType, "schema" : values.schema, "encoding" : values.encoding};
+	       
+	        var formatSelect = $('select[name=format_input_'+ escapeCharactersForSelect(id) + ']');
+	        
+	        formatSelect.val(stringify(format));     
+	        
+	    }
+	    
+	    var input = $('input[name=input_'+ escapeCharactersForSelect(id) + ']');
+	    
+	    if(input){
+	       input.val(values.value);
+	    }
+	    
+	    var select = $('select[name=input_'+ escapeCharactersForSelect(id) + ']');
+	    
+	    if(select){
+	       select.val(values.value);
+	    }	 
+	    
+	    var inputDiv = $('div[id=input_'+ escapeCharactersForSelect(id) + ']');
+	    
+	    if(inputDiv && values.hidden){
+	        inputDiv.css("display", "none");
+	    }
+	    	
+	},
+	
+	createFormInputs : function(inputs, container){
+	    
 	    var complexContainer = jQuery('<div id="complex-inputs"/>');
 	    var literalContainer = jQuery('<div id="literal-inputs"/>');
 	    var bboxContainer = jQuery('<div id="bbox-inputs"/>');
 	    container.append(complexContainer);
 	    container.append(literalContainer);
 	    container.append(bboxContainer);
+        
+        if(clientSideDefaultValuesForProcess && clientSideDefaultValuesForProcess.inputs){            
+	    
+	    var input;
+	    for (var i=0; i < inputs.length; i++) {
+	        input = inputs[i];
+
+            var preConfiguredValues = clientSideDefaultValuesForProcess.inputs[input.identifier];
+	            
+	        if(preConfiguredValues){
+	                
+	        if (input.complexData) {
+	            
+	            if(input.maxOccurs > 1){
+	            
+	                for (var j=0; j < preConfiguredValues.length; j++) {
+	                    input.occurrence = j+1;
+	        	        this.createPredefinedInput(input, complexContainer, TEMPLATE_EXECUTE_COMPLEX_INPUTS_MARKUP, this.createComplexInput);
+                        FormBuilder.prototype.fillInClientSideDefaultValuesForInput(input.identifier + "_" + (j+1), preConfiguredValues[j]);
+	        	    }
+	        	    
+	        	}else{
+	        	    this.createPredefinedInput(input, complexContainer, TEMPLATE_EXECUTE_COMPLEX_INPUTS_MARKUP, this.createComplexInput);
+                    FormBuilder.prototype.fillInClientSideDefaultValuesForInput(input.identifier, preConfiguredValues[0]);	        	
+	        	}
+	        	       	   
+	        } else if (input.boundingBoxData) {  
+	            
+	            if(input.maxOccurs > 1){
+	            
+	                for (var j=0; j < preConfiguredValues.length; j++) {
+	                    input.occurrence = j+1;
+	        	        this.createPredefinedInput(input, bboxContainer, TEMPLATE_EXECUTE_BBOX_INPUTS_MARKUP, this.createBoundingBoxInput);
+                        FormBuilder.prototype.fillInClientSideDefaultValuesForInput(input.identifier + "_" + (j+1), preConfiguredValues[j]);
+	        	    }
+	        	    
+	        	}else{
+	        	    this.createPredefinedInput(input, bboxContainer, TEMPLATE_EXECUTE_BBOX_INPUTS_MARKUP, this.createBoundingBoxInput);
+                    FormBuilder.prototype.fillInClientSideDefaultValuesForInput(input.identifier, preConfiguredValues[0]);  	
+	        	}
+	        } else if (input.literalData) {  
+	            
+	            if(input.maxOccurs > 1){
+	            
+	                for (var j=0; j < preConfiguredValues.length; j++) {
+	                    input.occurrence = j+1;
+	        	        this.createPredefinedInput(input, literalContainer, TEMPLATE_EXECUTE_LITERAL_INPUTS_MARKUP, this.createLiteralInput);
+                        FormBuilder.prototype.fillInClientSideDefaultValuesForInput(input.identifier + "_" + (j+1), preConfiguredValues[j]);
+	        	    }
+	        	    
+	        	}else{
+	        	    this.createPredefinedInput(input, literalContainer, TEMPLATE_EXECUTE_LITERAL_INPUTS_MARKUP, this.createLiteralInput);
+                    FormBuilder.prototype.fillInClientSideDefaultValuesForInput(input.identifier, preConfiguredValues[0]);
+	        	}
+	        }
+	        }
+	    }
+            
+		}else{
 	    
 	    var input;
 	    for (var i=0; i < inputs.length; i++) {
 	        input = inputs[i];    
 	                
-	        if (input.complexData) {    		    		
+	        if (input.complexData) {
 	        	this.createInput(input, complexContainer, TEMPLATE_EXECUTE_COMPLEX_INPUTS_MARKUP, TEMPLATE_EXECUTE_COMPLEX_INPUTS_COPY_MARKUP, "complex-inputs", this.createComplexInput);       	   
 	        } else if (input.boundingBoxData) {            
 	        	this.createInput(input, bboxContainer, TEMPLATE_EXECUTE_BBOX_INPUTS_MARKUP, TEMPLATE_EXECUTE_BBOX_INPUTS_COPY_MARKUP, "bbox-inputs", this.createBoundingBoxInput);               
@@ -2045,8 +2248,9 @@ var FormBuilder = Class.extend({
 	        	this.createInput(input, literalContainer, TEMPLATE_EXECUTE_LITERAL_INPUTS_MARKUP, TEMPLATE_EXECUTE_LITERAL_INPUTS_COPY_MARKUP, "literal-inputs", this.createLiteralInput);
 	        }
 	    }
+		
+		}
 	    
-	    return container;	
 	},
 
 	createInput : function(input, container, template, copyTemplate, inputParentId, propertyCreationFunction){
@@ -2072,7 +2276,7 @@ var FormBuilder = Class.extend({
 	    
 	    var result = jQuery.tmpl(template, templateProperties);
 	    result.appendTo(container);
-	              
+	    
 	    if (input.maxOccurs > 1) {
 	    
 	    	if (button) {
@@ -2088,6 +2292,21 @@ var FormBuilder = Class.extend({
 	    	}
 		
 		}
+		
+	},
+
+	createPredefinedInput : function(input, container, template, propertyCreationFunction){
+
+	    var templateProperties = propertyCreationFunction(input, this);
+	    
+	    if (input.minOccurs > 0) {
+	        templateProperties.required = "*";
+	    }
+	    	
+	    var name = input.identifier;
+	    
+	    var result = jQuery.tmpl(template, templateProperties);
+	    result.appendTo(container);
 	    
 	    if (input.hidden) {
 	    	result.css("display", "none");
@@ -2115,7 +2334,7 @@ var FormBuilder = Class.extend({
 	    var inputType;
 	    var fieldName;
 	    if(input.maxOccurs > 1){
-	    	fieldName = "input_"+ name + "_"+ number;
+	    	fieldName = "input_"+ name + "_" + number;
 	    }else {
 	    	fieldName = "input_"+ name;
 	    }
@@ -2154,7 +2373,8 @@ var FormBuilder = Class.extend({
 	    checkBoxDiv.append(checkBox);
 	    checkBoxDiv.append("asReference");
 	    
-	    complexInputElements.identifier = labelText;
+	    complexInputElements.identifier = fieldName;
+	    complexInputElements.labelText = labelText;
 	    complexInputElements.inputField = fieldDiv.html();
 	    complexInputElements.asReference = checkBoxDiv.html();
 	    complexInputElements.formats = formatDropBoxDiv.html();
@@ -2179,12 +2399,23 @@ var FormBuilder = Class.extend({
 	    
 	    var name = input.identifier;
 	    
-	    var fieldName = "input_"+ name + number;
+	    var fieldName;
+	    if(input.maxOccurs > 1){
+	    	fieldName = "input_"+ name + "_" + number;
+	    }else {
+	    	fieldName = "input_"+ name;
+	    }
+	    
+	    if(input.literalData.defaultValue){
+	        literalInputsWithServerSideDefaultValues.push([fieldName, input.literalData.defaultValue]);
+	    }
+	    
 	    var anyValue = input.literalData.anyValue;
 	    // anyValue means textfield, otherwise we create a dropdown
 	    var field = anyValue ? jQuery("<input />") : jQuery("<select />");    
 	    
 	    field.attr("name", fieldName);
+	    field.attr("id", fieldName);
 	    var inputType = FormBuilder.prototype.createInputTypeElement("literal", fieldName);
 
 	    field.attr("title", input["abstract"]);
@@ -2225,9 +2456,10 @@ var FormBuilder = Class.extend({
 	    	if (anyValue) {
 	    		field.attr("value", input.predefinedValue);
 	    	}
-	    }
+	    }	    
 	    
-	    literalInputElements.identifier = labelText;
+	    literalInputElements.identifier = fieldName;
+	    literalInputElements.labelText = labelText;
 	    literalInputElements.inputField = fieldDiv.html();
 	    
 	    return literalInputElements; 
@@ -2250,7 +2482,12 @@ var FormBuilder = Class.extend({
 	    
 	    var name = input.identifier;
 	    
-	    var fieldName = "input_"+ name + number;
+	    var fieldName;
+	    if(input.maxOccurs > 1){
+	    	fieldName = "input_"+ name + "_" + number;
+	    }else {
+	    	fieldName = "input_"+ name;
+	    }
 	    var field = jQuery("<input />");
 	    field.attr("title", input["abstract"]);
 
@@ -2270,9 +2507,10 @@ var FormBuilder = Class.extend({
 	    	labelText = input.identifier + "(" + number + "/" + input.maxOccurs + ")";
 	    }else{
 	    	labelText= input.identifier;
-	    }
+	    }	    
 	    
-	    bboxInputElements.identifier = labelText;
+	    bboxInputElements.identifier = fieldName;
+	    bboxInputElements.labelText = labelText;
 	    bboxInputElements.inputField = fieldDiv.html();
 	    bboxInputElements.description = "left, bottom, right, top";
 		
@@ -2286,12 +2524,19 @@ var FormBuilder = Class.extend({
 	},
 	
 	createFormatDrowpdownEntry : function(format) {
-		var formatString = "";
 		
 		//if these exist, append with semicolon, else return empty string
     	var schema = format.schema;
     	var encoding = format.encoding;
     	var mimeType = format.mimeType;
+    	
+    	var formatString = FormBuilder.prototype.createFormatString(mimeType, schema, encoding);
+    	
+    	return formatString;
+	},
+	
+	createFormatString : function(mimeType, schema, encoding) {
+		var formatString = "";
     	
 		//mimeType is mandatory, schema and encoding are not
     	if(schema && encoding){
@@ -2307,8 +2552,7 @@ var FormBuilder = Class.extend({
     	return formatString;
 	},
 
-	createFormOutputs : function(processDescription){
-		var container = jQuery('<div id="output"></div>');
+	createFormOutputs : function(processDescription, container){
 	    
 		jQuery.tmpl(TEMPLATE_EXECUTE_OUTPUTS_MARKUP, "").appendTo(container);
 		
@@ -2330,35 +2574,46 @@ var FormBuilder = Class.extend({
 	    	
 	    	var checkBox = jQuery('<input type="checkbox"/>');
 	    	checkBox.attr("name", id);
-	    	checkBox.attr("title", "Enable this output.");
+	    	checkBox.attr("title", "Request this output.");
 	    	
 	    	var typeField = this.createInputTypeElement(output.complexOutput ? "complex" : "literal", id);
-	    	
-	    	if (output.selected) {
-	    		checkBox.attr("checked", "checked");
-	    	}
+
+            var preConfiguredValues;
+
+            if(clientSideDefaultValuesForProcess){
+                preConfiguredValues = clientSideDefaultValuesForProcess.outputs[output.identifier];
+            }
 	    	
 	    	outputSettingsDiv.append(checkBox);
 	    	outputSettingsDiv.append("request this output");
 	    	outputSettingsDiv.append(typeField);
 	    		    
-	        var checkBox = jQuery('<input type="checkbox" name="checkbox_'+id + '" value="asReference" title="This ouput will be requested as reference."/>');
+	        var asReferenceCheckBox = jQuery('<input type="checkbox" name="checkbox_'+id + '" value="asReference" title="This ouput will be requested as reference."/>');
+	        	    	
+	    	//check box if output appears in preconfigured values
+	    	if (preConfiguredValues) {
+	    		checkBox.attr("checked", "checked");
+	    		
+	    		if(preConfiguredValues.asReference){
+	    		    asReferenceCheckBox.attr("checked", "checked");
+	    		}
+	    		
+	    	}
 	        
-	        outputSettingsDiv.append(checkBox);
+	        outputSettingsDiv.append(asReferenceCheckBox);
 	        outputSettingsDiv.append("asReference");
 	        
 	    	templateProperties.identifier = id;
 	    	templateProperties.settings = outputSettingsDiv.html();
 	    	
+	    	var formatDropBox;
+	    	var defaultFormat;
+	    	
 	    	if (output.complexOutput) {
 	    		var formats = output.complexOutput.supported.formats;
-	    		var defaultFormat = output.complexOutput["default"].formats[0];
+	    		defaultFormat = output.complexOutput["default"].formats[0];
 	    		
-	    		var formatDropBox = this.createFormatDropdown("format_"+id, formats, output);
-	    		
-	    		// set the default as selected in the dropdown
-	    		formatDropBox.val(JSON.stringify(defaultFormat));
-	    		
+	    		formatDropBox = this.createFormatDropdown("format_"+id, formats, output);
 	    		var formatDropBoxDiv = jQuery("<div />");
 	    		
 	    		formatDropBoxDiv.append(formatDropBox);
@@ -2380,9 +2635,36 @@ var FormBuilder = Class.extend({
 	    	if (template) {
 	    		jQuery.tmpl(template, templateProperties).appendTo(outputsUl);
 	    	}
+		
+		    //value of format dropbox can only be set after it is in the dom tree
+	        
+	        var formatDropBox = $('select[name=format_'+ escapeCharactersForSelect(id) + ']');
+	        		
+	        if(preConfiguredValues && formatDropBox){
+	           
+	            var format = {"mimeType" : preConfiguredValues.mimeType, "schema" : preConfiguredValues.schema, "encoding" : preConfiguredValues.encoding};
+	                  
+	            formatDropBox.val(stringify(format));
+	            	    
+	        }else if(formatDropBox && defaultFormat){	    	
+	        	
+	            // set the default as selected in the dropdown
+	            formatDropBox.val(stringify(defaultFormat));
+	        }
+	        
+	        if(clientSideDefaultValuesForProcess){
+	            //if there is a pre-configuration
+	            //hide output, if not present in pre-configuration
+	            //or if flag hidden is set
+	            if(preConfiguredValues == null || (preConfiguredValues && preConfiguredValues.hidden)){
+	               	var outputDiv = $('div[id='+ escapeCharactersForSelect(id) + ']');
+	                outputDiv.css("display", "none");	                
+	            }
+	        
+	        }
+	        
 		}
 		
-		return container;
 	},
 
 	createFormatDropdown : function(id, formats, input){
@@ -2397,7 +2679,7 @@ var FormBuilder = Class.extend({
 	    	var formatString = this.createFormatDrowpdownEntry(format);
 
 	    	option = jQuery('<option>'+formatString+'</option>');
-	        option.val(JSON.stringify(format));
+	        option.val(stringify(format));
 	        field.append(option);
 	    }
 		return field;
@@ -2580,7 +2862,9 @@ var FormParser = Class.extend({
 				/*
 				 * its only present in the array if checked
 				 */
-				outputs[outputNameToPosition[originalOutputName]].asReference = true;
+				if(outputNameToPosition[originalOutputName] != null){
+				    outputs[outputNameToPosition[originalOutputName]].asReference = true;
+				}
 			}
 		}
 
@@ -2588,15 +2872,15 @@ var FormParser = Class.extend({
 	},
 
 	parseFormatObject : function(formatObject, targetObject) {
-		if (formatObject.mimeType) {
+		if (formatObject.mimeType && formatObject.mimeType != "") {
 			targetObject.mimeType = formatObject.mimeType;
 		}
 
-		if (formatObject.schema) {
+		if (formatObject.schema && formatObject.schema != "") {
 			targetObject.schema = formatObject.schema;
 		}
 
-		if (formatObject.encoding) {
+		if (formatObject.encoding && formatObject.encoding != "") {
 			targetObject.encoding = formatObject.encoding;
 		}
 	},
