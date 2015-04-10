@@ -11,13 +11,13 @@
         <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.4.1/pure-min.css" />
         <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.4.1/base-min.css" />
         <!--<link rel="stylesheet" href="http://use.typekit.net/c/ed00b8/omnes-pro:n2:n3,proxima-nova:n1:n4:n7.X33:N:2,X35:N:2,Vmv:N:2,W0V:N:2,W0Y:N:2/d?3bb2a6e53c9684ffdc9a9efe1f5b2a62303f0a107c078b501a601d28c8e2edd714516b20f389cdf4d0f7806baf3d9cd5421f23f55150b514ac21ce5fcd0563dc217ff19c42386f81e4224b0e3df2135a11b1bba381da80f34ebb20386ca61589cfed552d3c7749aeae2c1affb17809efad64fcb69c8eb638d84326d8b274d56f758c9b7c2cc3147bd2a2a5dbb0b0385f467e1cc22a2f1e980e3763337ce881a382a20f9cd831158b7c2371eb6804583041eaac24a8b3c2d87c0f9f7f62193f1954a7cdda607c6643b0e4d2c62652877fcca3957f4ef2ac9114b789230ddb9ac67b4fc6add483528473803699c3999bbc62ae0ca8caa9c19a71f5aa525e4e70c4523fb12c52ccf7f224f0d1d4a1044c2af4c233f492d60ef8d4e18f05c0695685be6045eed0dd50856f145f9a39eacb4f3dd87138e6502a0116e09d25cc40bafb8198072a98f14d0cf6dc2fa51efe9b82ad3c49a7866df2a6e8a496c0af569d2c50dc2abc85915961a02412ac0ac48b36202d908d7e2909a8872093c52485ab2d4e48ae168cd79a095100781fa77e0b1f530af644f5793aee5fd4ea719ccce62e8ac46c693125aaa4e35624ca6b7db736c380894025f0c3b8eabe3e34e44d8af11c76b62cd48dfd13179e364b0ea12d8e811b8b4f56dccc394967415737e54b75211bd8fb0e">-->
-        <!-- SCRIPTS -->
-        <!--<script type="text/javascript" language="javascript" src="../_scripts/js/jquery-1.8.2.min.js"></script>-->
+
         <!-- WPS CLIENT -->
         <script src="js/jquery/jquery.1.8.3.min.js"></script>
         <script src="js/jquery/jquery-ui.1.8.3.min.js"></script>
         <script src="js/openlayers/OpenLayers-closure.js"></script>
-        <script src="js/wps-js/wps-js.min.js"></script>
+        <!--<script src="js/wps-js/wps-js.min.js"></script>-->
+        <script src="js/wps-js/wps-js.js"></script>
         <link type="text/css" rel="stylesheet" href="css/wps-js.css" />
 
 		<script type="text/javascript">
@@ -49,7 +49,6 @@
             <i>Figure: Screenshot of some of output plots based on mere 100 sampling points for illustration purposes: (a) classification information (output of the self-organizing map) showing how the input variables (colour-coded) influence each of the output classes (circles at the top); (b) global plot of "property-distance" which is a measure of classification quality; (c) the global land use archetypes map in a very coarse version; (d) statistical background information of the self-organizing map.</i>
         </p>
 		
-        
         <div id="wrapper" class="text">
             <div style="margin: 1em;">
                 <div class="wps-container">
@@ -58,21 +57,22 @@
                 </div>
             </div>
             <div style="margin: 1em;">
-                <div class="wps-container">
-                <select id="processes">
-                    <option>Select a process</option>
-                </select> 
-                <span id="processDescriptionLink"></span>
-                <div class="wps-execute-container" id="wps-execute-container"></div></div>
-            </div>
-            <div style="margin: 1em;">
-                <div class="wps-container">
-                    <div id="executeProcess">Process output</div>
-                </div>
-            </div>
-        </div>
+				<div class="wps-container">
+					<select id="processes" style="display: none;">
+						<option>Select a process</option>
+					</select> 
+					<span id="processDescriptionLink"></span>
+					<div class="wps-execute-container" id="wps-execute-container"></div>
+				</div>
+				<div style="margin: 1em;">
+					<div class="wps-container">
+						<div id="executeProcess">Process output</div>
+					</div>
+				</div>
+			</div>
+		</div>
 		
-		<p class="text">The client above is based on <em>wps-js</em>, an <a href="https://github.com/52North/wps-js/" title="wps-js on GitHub">open source client library</a> for connecting JavaScript applications with WPS.</p>
+		<p class="text">The client above is based on <em>wps-js</em>, an <a href="https://github.com/52North/wps-js/" title="wps-js on GitHub">open source client library</a> for building user interfaces for WPS services in JavaScript.</p>
         
 		<p class="text">Some noteworthy pieces of information about the process: (i) you can access the actual script files by clicking on the links for "R Script" and "Import: advanced-plots.R", which even tells you that the analysis is split over two files, (ii) you can access information about the execution environment by clicking on the "R Session Info" link, which gives you detailed technical information about R, and (iii) the whole process is completely reproducible on your own computer or server, since all components are open source software.</p>
         
@@ -153,7 +153,13 @@
                         
                         getCapabilities(wpsUrl);
                         describeProcess(processId);
+						// $("processes").val(processId);
                 });
+				
+				/*document.getElementById("processes").onchange = function() {
+					var sel = document.getElementById("processes");
+					describeProcess(sel.options[sel.selectedIndex].text);
+				};*/
 
 				$("#descriptionLink").attr("href", wpsUrl + "?Request=DescribeProcess&service=WPS&version=1.0.0&identifier=" + processId);
 		</script>
