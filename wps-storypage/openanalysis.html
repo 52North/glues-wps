@@ -49,6 +49,8 @@
             <i>Figure: Screenshot of some of output plots based on mere 100 sampling points for illustration purposes: (a) classification information (output of the self-organizing map) showing how the input variables (colour-coded) influence each of the output classes (circles at the top); (b) global plot of "property-distance" which is a measure of classification quality; (c) the global land use archetypes map in a very coarse version; (d) statistical background information of the self-organizing map.</i>
         </p>
 		
+		<p class="text">Hover over the input fields with the cursor to get more information about each parameter, or use the button to fill in default values for fields that have no value yet. The product of the "somGridDim" values configures the number of output classes, i.e. "2,3" will result in 6 output classes. The higher the sampling size, the longer the process will run - so if you want to experiment, start with "1000", which arguably is not a lot for the whole globe. The original analysis used a value of 1 million sample points. After execution, click the "refresh" icon in the top left cornner of the result area to check if the process has finished. Please expect the process to run a few minutes.</p>
+		
         <div id="wrapper" class="text">
             <div style="margin: 1em;">
                 <div class="wps-container">
@@ -64,13 +66,15 @@
 					<span id="processDescriptionLink"></span>
 					<div class="wps-execute-container" id="wps-execute-container"></div>
 				</div>
-				<div style="margin: 1em;">
+				<div style="margin-top: 1em;">
 					<div class="wps-container">
 						<div id="executeProcess">Process output</div>
 					</div>
 				</div>
 			</div>
 		</div>
+		
+		<!-- could add info about field standardization method: www.inside-r.org/packages/cran/vegan/docs/wisconsin -->
 		
 		<p class="text">The client above is based on <em>wps-js</em>, an <a href="https://github.com/52North/wps-js/" title="wps-js on GitHub">open source client library</a> for building user interfaces for WPS services in JavaScript.</p>
         
@@ -137,6 +141,109 @@
                 
                 var wpsUrl = "http://wps1.glues.geo.tu-dresden.de/wps/WebProcessingService";
                 var processId = "org.n52.wps.server.r.glues.systemarchetypes";
+				
+				var clientSideDefaultValues = {
+					"org.n52.wps.server.r.glues.systemarchetypes" : {
+						"inputs" : {
+							"dataPath" : [
+									{
+										"value" : "Input_Data_v2",
+										"hidden" : true
+									}],
+							"sampleSize" : [ {} ],
+							"samplingType" : [
+									{
+										"value" : "regular"
+									}],
+							"standardizationMethod" : [
+									{
+										"value" : "standardize"
+									}],
+							"somGridTopology" : [
+									{
+										"value" : "hexagonal"
+									}],
+							"somGridDim" : [ {} ],
+							"somIterations" : [
+									{
+										"value" : "1",
+										"hidden" : true
+									}]
+						},
+						"outputs" : {
+							"sampleBaseDataStatistics" : {
+								"asReference" : false,
+								"hidden" : false
+							},
+							/*"sampledBaseData" : { },*/
+							/*"output.normalizedDataSummary" : {
+								"asReference" : true,
+								"hidden" : false
+							},*/
+							"output.normalizedInputData" : {
+								"asReference" : true,
+								"hidden" : false
+							},
+							"output.codeVector" : {
+								"mimeType" : "",
+								"schema" : "",
+								"encoding" : "",
+								"asReference" : true,
+								"hidden" : false
+							},
+							"output.data" : {
+								"mimeType" : "",
+								"schema" : "",
+								"encoding" : "",
+								"asReference" : true,
+								"hidden" : false
+							},
+							"output.plots" : {
+								"mimeType" : "application/pdf",
+								"asReference" : true,
+								"hidden" : false
+							},
+							"output.map" : {
+								"mimeType" : "image/png",
+								"encoding" : "base64",
+								"asReference" : false,
+								"hidden" : false
+							},
+							"output.map" : {
+								"mimeType" : "image/png",
+								"encoding" : "base64",
+								"asReference" : false,
+								"hidden" : false
+							},
+							"output.map" : {
+								"mimeType" : "image/png",
+								"encoding" : "base64",
+								"asReference" : false,
+								"hidden" : false
+							},
+							"output.distancemap" : {
+								"mimeType" : "image/png",
+								"encoding" : "base64",
+								"asReference" : false,
+								"hidden" : false
+							},
+							"output.statistics.plot" : {
+								"mimeType" : "image/png",
+								"encoding" : "base64",
+								"asReference" : false,
+								"hidden" : false
+							},
+							"sessionInfo" : {
+								"asReference" : true,
+								"hidden" : true
+							},
+							"warnings" : {
+								"asReference" : true,
+								"hidden" : true
+							}
+						}
+					}
+				};
 
                 $("#wpscaller").click(function() {                      
                         $("#capabilitiesByClick").wpsCall({
