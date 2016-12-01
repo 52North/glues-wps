@@ -22,8 +22,8 @@
 # wps.metadata: title = GLUES story page 'Global map provides new insights into land use', href = http://geoportal-glues.ufz.de/stories/landsystemarchetypes.html;
 # wps.metadata: title = GLUES story page 'Open analysis of global land use', href = http://geoportal-glues.ufz.de/stories/openanalysis.html;
 # wps.metadata: title = Journal paper: Mapping global land system archetypes, href = http://www.sciencedirect.com/science/article/pii/S0959378013001532;
-# wps.metadata: title = Output dataset in GLUES catalogue (dataset), href = http://catalog-glues.ufz.de/terraCatalog/Query/ShowCSWInfo.do?fileIdentifier=glues:ufz:metadata:dataset:landsystemarchetypes;
-# wps.metadata: title = Output dataset in GLUES catalogue (service), href = http://catalog-glues.ufz.de/terraCatalog/Query/ShowCSWInfo.do?fileIdentifier=e9d85591-9ed1-49a1-8251-571f727ae433;
+# wps.metadata: title = Output dataset in GLUES catalogue (dataset), href = http%3A%2F%2Fcatalog-glues.ufz.de%2FterraCatalog%2FQuery%2FShowCSWInfo.do%3FfileIdentifier%3Dglues%3Aufz%3Ametadata%3Adataset%3Alandsystemarchetypes;
+# wps.metadata: title = Output dataset in GLUES catalogue (service), href = http%3A%2F%2Fcatalog-glues.ufz.de%2FterraCatalog%2FQuery%2FShowCSWInfo.do%3FfileIdentifier%3De9d85591-9ed1-49a1-8251-571f727ae433;
 
 ################################################################################
 # required packages
